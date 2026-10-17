@@ -513,6 +513,45 @@ h2 {
   color: var(--faint);
 }
 
+.deadline-list li {
+  position: relative;
+}
+
+.deadline {
+  padding-right: 36px;
+}
+
+/* Крестик «убрать срок» — появляется при наведении на строку */
+.deadline-clear {
+  position: absolute;
+  top: 12px;
+  right: -8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--faint);
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity var(--ease), color var(--ease), background var(--ease);
+}
+
+.deadline-list li:hover .deadline-clear,
+.deadline-clear:focus-visible {
+  opacity: 1;
+}
+
+.deadline-clear:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+@media (hover: none) {
+  .deadline-clear {
+    opacity: 1;
+  }
+}
+
 /* ---------- Заметка ---------- */
 
 .note {
@@ -712,6 +751,39 @@ h2 {
   pointer-events: none;
 }
 
+/* Крестик в углу срока — появляется при наведении на срок */
+.due-clear {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease), color var(--ease), background var(--ease);
+}
+
+.due:hover .due-clear,
+.due-clear:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.due-clear:hover {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .delete {
   width: 30px;
   height: 30px;
@@ -835,11 +907,6 @@ h2 {
   line-height: 1.35;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
-}
-
-.blk-content[data-clamped="true"] {
-  max-height: 15.5em;
-  overflow: hidden;
 }
 
 .blk-more {

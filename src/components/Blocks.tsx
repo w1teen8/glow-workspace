@@ -5,7 +5,7 @@ import { formatDue, localDay } from "@/lib/dates";
 import { formatSize, shrinkImage } from "@/lib/images";
 import type { Item } from "@/lib/types";
 import { INLINE_MIME, LIMITS } from "@/lib/validate";
-import { FormatBar, RichText, handleFormatKey } from "./RichText";
+import { FormatBar, RichText, handleFormatKey, renderRich } from "./RichText";
 import { useWorkspace } from "./WorkspaceProvider";
 
 /** Высота textarea по содержимому. */
@@ -133,8 +133,8 @@ export function Blocks({ section }: { section: string }) {
   );
 }
 
-const LONG_CHARS = 700;
-const LONG_LINES = 12;
+/** Сколько элементов (абзацев, списков, подзаголовков) видно у свёрнутого блока. */
+const COLLAPSED_ELEMENTS = 3;
 
 function BlockView({ item }: { item: Item }) {
   const { updateItem, deleteItem } = useWorkspace();
@@ -153,7 +153,7 @@ function BlockView({ item }: { item: Item }) {
     lines.length > 1 && lines[0].trim().length > 0 && lines[0].length <= 120 && !/^\s*[•\-–*]\s/.test(lines[0]);
   const title = hasTitle ? lines[0] : null;
   const body = hasTitle ? lines.slice(1).join("\n").replace(/^\n+/, "") : text;
-  const isLong = body.length > LONG_CHARS || body.split("\n").length > LONG_LINES;
+  const isLong = renderRich(body).length > COLLAPSED_ELEMENTS + 1;
 
   function startEdit() {
     setDraft(text);
@@ -206,8 +206,8 @@ function BlockView({ item }: { item: Item }) {
             >
               {title && <h3 className="blk-title">{title.replace(/^#{1,2}\s+/, "")}</h3>}
               {body && (
-                <div className="blk-content" data-clamped={isLong && !expanded}>
-                  <RichText text={body} />
+                <div className="blk-content">
+                  <RichText text={body} limit={isLong && !expanded ? COLLAPSED_ELEMENTS : undefined} />
                 </div>
               )}
               {isLong && (

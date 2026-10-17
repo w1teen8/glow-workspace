@@ -102,6 +102,16 @@ export function TaskRow({ task }: { task: Task }) {
             value={task.due ?? ""}
             onChange={(e) => updateTask(task.id, { due: e.target.value || null })}
           />
+          {task.due && (
+            <button
+              className="due-clear"
+              aria-label="Убрать срок"
+              title="Убрать срок"
+              onClick={() => updateTask(task.id, { due: null })}
+            >
+              ×
+            </button>
+          )}
         </span>
 
         <button className="delete" aria-label="Удалить задачу" title="Удалить" onClick={() => deleteTask(task)}>

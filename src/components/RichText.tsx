@@ -38,7 +38,8 @@ const BULLET = /^\s*[•\-–*]\s+/;
 const NUMBER = /^\s*(\d+)[.)]\s*/;
 const HEADING = /^(#{1,2})\s+/;
 
-export function RichText({ text }: { text: string }) {
+/** Текст → список верхнеуровневых элементов (абзацы, заголовки, списки). */
+export function renderRich(text: string): ReactNode[] {
   const lines = text.split("\n");
   const out: ReactNode[] = [];
   let i = 0;
@@ -105,7 +106,13 @@ export function RichText({ text }: { text: string }) {
     );
   }
 
-  return <div className="rich">{out}</div>;
+  return out;
+}
+
+/** limit — показать только первые N элементов (свёрнутый длинный блок). */
+export function RichText({ text, limit }: { text: string; limit?: number }) {
+  const nodes = renderRich(text);
+  return <div className="rich">{limit ? nodes.slice(0, limit) : nodes}</div>;
 }
 
 type Apply = (value: string, selection: [number, number]) => void;

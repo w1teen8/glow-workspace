@@ -24,7 +24,7 @@ function Row({ label, tasks }: { label: string; tasks: Task[] }) {
 }
 
 export function ProgressView() {
-  const { state } = useWorkspace();
+  const { state, updateTask } = useWorkspace();
   const { tasks, people } = state;
 
   const unassigned = tasks.filter((t) => !t.assignee);
@@ -74,6 +74,14 @@ export function ProgressView() {
                       {owner && <span className="deadline-meta">{owner}</span>}
                     </span>
                   </Link>
+                  <button
+                    className="deadline-clear"
+                    aria-label={`Убрать срок у задачи «${task.text}»`}
+                    title="Убрать срок"
+                    onClick={() => updateTask(task.id, { due: null })}
+                  >
+                    ×
+                  </button>
                 </li>
               );
             })}
