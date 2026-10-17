@@ -1,7 +1,7 @@
 /* =========================================================
    GLOW SPACE — две темы:
    светлая — палитра логотипа (синий знак #2B3A52),
-   тёмная — тёмно-синий фон логотипа и салатовый акцент.
+   тёмная — тёмно-синий фон логотипа и светло-голубой акцент из той же палитры.
    Тему ставит скрипт в <head> (data-theme на <html>) до отрисовки.
    ========================================================= */
 
@@ -46,19 +46,19 @@
   --text: #e9edf3;
   --muted: #9aa6b8;
   --faint: #6c788b;
-  --accent: #b4e44d;
-  --accent-soft: rgba(180, 228, 77, 0.12);
-  --accent-line: rgba(180, 228, 77, 0.45);
-  --on-accent: #15200a;
+  --accent: #a8bcd8;
+  --accent-soft: rgba(168, 188, 216, 0.12);
+  --accent-line: rgba(168, 188, 216, 0.45);
+  --on-accent: #12161f;
   --toast-bg: #242c3d;
   --toast-text: #e9edf3;
-  --toast-action: #b4e44d;
+  --toast-action: #a8bcd8;
   color-scheme: dark;
 }
 
 /* В data-URI цвет не подставить переменной — для тёмной темы свои версии */
 :root[data-theme="dark"] .check:checked {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2315200a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2312161f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 :root[data-theme="dark"] .deadline-form select.field {
