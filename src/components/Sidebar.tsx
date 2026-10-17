@@ -9,8 +9,6 @@ const LINKS = [
   { href: "/", emoji: "", title: "Прогресс" },
   null,
   ...SECTIONS.map((s) => ({ href: `/s/${s.slug}`, emoji: s.emoji, title: s.title })),
-  null,
-  { href: "/agent", emoji: "🤖", title: "ИИ-агент" },
 ];
 
 export function Sidebar() {

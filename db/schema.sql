@@ -52,10 +52,3 @@ CREATE TABLE IF NOT EXISTS items (
 );
 
 CREATE INDEX IF NOT EXISTS items_section ON items (section);
-
-CREATE TABLE IF NOT EXISTS chat_messages (
-  id         serial PRIMARY KEY,
-  role       text NOT NULL CHECK (role IN ('user', 'assistant')),
-  content    text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);

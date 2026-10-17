@@ -346,8 +346,7 @@ h2 {
 }
 
 .note textarea::placeholder,
-.add-task::placeholder,
-.composer textarea::placeholder {
+.add-task::placeholder {
   color: var(--faint);
 }
 
@@ -688,114 +687,7 @@ h2 {
   font-weight: 500;
 }
 
-/* ---------- ИИ-агент ---------- */
-
-.main:has(.chat) {
-  padding-bottom: 24px;
-}
-
-.chat {
-  display: flex;
-  flex-direction: column;
-  max-width: 720px;
-  /* высота экрана минус отступы .main сверху и снизу */
-  height: calc(100dvh - 56px - 24px);
-}
-
-.chat h1 {
-  margin-bottom: 8px;
-}
-
-.chat-intro {
-  margin: 0 0 24px;
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding-bottom: 24px;
-}
-
-.message {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: 1.6;
-}
-
-.message[data-role="user"] {
-  align-self: flex-end;
-  max-width: 85%;
-  padding: 10px 14px;
-  background: var(--surface);
-  border-radius: var(--radius);
-}
-
-.chat-empty {
-  margin: auto 0;
-  color: var(--faint);
-}
-
-.quick {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-}
-
-.chip {
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.chip:hover:not(:disabled),
-.chip[aria-pressed="true"] {
-  color: var(--text);
-  border-color: var(--faint);
-}
-
-.chip:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.section-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 8px;
-}
-
-.composer {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.composer textarea {
-  flex: 1;
-  max-height: 200px;
-  min-height: 48px;
-  padding: 12px 14px;
-  resize: none;
-  background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  outline: none;
-}
-
-.composer textarea:focus {
-  border-color: var(--line);
-}
+/* ---------- Кнопка ---------- */
 
 .button {
   height: 48px;
@@ -809,17 +701,6 @@ h2 {
 .button:disabled {
   opacity: 0.4;
   cursor: default;
-}
-
-@media (max-width: 760px) {
-  /* верхняя панель 56px + отступы .main 28px и 16px */
-  .chat {
-    height: calc(100dvh - 56px - 28px - 16px);
-  }
-
-  .main:has(.chat) {
-    padding-bottom: 16px;
-  }
 }
 
 /* ---------- Вход ---------- */

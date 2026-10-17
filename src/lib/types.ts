@@ -29,9 +29,3 @@ export type WorkspaceState = {
   items: Item[];
   people: People;
 };
-
-export type ChatMessage = {
-  id: number;
-  role: "user" | "assistant";
-  content: string;
-};

@@ -13,8 +13,6 @@ services:
         value: "22"
       - key: DATABASE_URL
         sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
       - key: PERSON_A
         sync: false
       - key: PERSON_B
