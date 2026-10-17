@@ -5,7 +5,7 @@ import "./globals.css";
 const font = Golos_Text({ subsets: ["latin", "cyrillic"], weight: ["400", "500"] });
 
 export const metadata: Metadata = {
-  title: { default: "Glow Workspace", template: "%s · Glow Workspace" },
+  title: { default: "GLOW SPACE", template: "%s · GLOW SPACE" },
   robots: { index: false, follow: false },
 };
 

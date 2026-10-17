@@ -26,14 +26,14 @@ export function Sidebar() {
   return (
     <>
       <header className="topbar">
-        <span>{current ? current.title : "Glow Workspace"}</span>
+        <span>{current ? current.title : "GLOW SPACE"}</span>
         <button className="topbar-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? "Закрыть" : "Разделы"}
         </button>
       </header>
 
       <aside className="sidebar" data-open={open}>
-        <div className="brand">Glow Workspace</div>
+        <div className="brand">GLOW SPACE</div>
         <nav className="nav">
           {LINKS.map((link, i) =>
             link ? (

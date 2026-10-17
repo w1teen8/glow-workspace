@@ -31,7 +31,7 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit}>
-      <h1>Glow Workspace</h1>
+      <h1>GLOW SPACE</h1>
       <input className="field" name="login" placeholder="Логин" autoComplete="username" required autoFocus />
       <input
         className="field"
