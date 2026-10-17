@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Golos_Text, Outfit } from "next/font/google";
+import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
 // Интерфейс — Golos Text (есть кириллица). Outfit — только надпись логотипа, как в макете.
@@ -12,15 +13,22 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F2F3F5",
-  colorScheme: "light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F2F3F5" },
+    { media: "(prefers-color-scheme: dark)", color: "#12161F" },
+  ],
+  colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${font.className} ${outfit.variable}`}>
+    // data-theme ставит скрипт ниже до гидрации, поэтому атрибут на <html> может отличаться от серверного
+    <html lang="ru" className={`${font.className} ${outfit.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );

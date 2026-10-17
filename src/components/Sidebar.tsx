@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SECTION_TITLE_MAX } from "@/lib/sections";
 import { Logo, LogoMark } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { useWorkspace } from "./WorkspaceProvider";
 
 export function Sidebar() {
@@ -105,9 +106,12 @@ export function Sidebar() {
             </button>
           )}
         </nav>
-        <button className="logout" onClick={logout}>
-          Выйти
-        </button>
+        <div className="sidebar-footer">
+          <ThemeToggle />
+          <button className="logout" onClick={logout}>
+            Выйти
+          </button>
+        </div>
       </aside>
     </>
   );
