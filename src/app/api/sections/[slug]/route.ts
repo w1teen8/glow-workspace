@@ -1,5 +1,6 @@
 import { authorize, json } from "@/lib/api";
 import { db } from "@/lib/db";
+import { isPersonSection } from "@/lib/sections";
 
 /** Удаляет раздел вместе с его блоками и файлами. */
 export async function DELETE(req: Request, ctx: { params: Promise<{ slug: string }> }) {
@@ -7,6 +8,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ slug: string
   if (denied) return denied;
 
   const { slug } = await ctx.params;
+  if (isPersonSection(slug)) return json({ error: "Личную вкладку удалить нельзя" }, 400);
   const sql = db();
   const [, deleted] = await sql.transaction([
     sql`DELETE FROM items WHERE section = ${slug}`,

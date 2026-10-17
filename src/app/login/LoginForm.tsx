@@ -31,7 +31,11 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit}>
-      <h1>GLOW SPACE</h1>
+      <h1 className="login-title">
+        <span className="brand-mark" aria-hidden />
+        GLOW SPACE
+      </h1>
+      <p className="login-sub">Рабочее пространство на двоих</p>
       <input className="field" name="login" placeholder="Логин" autoComplete="username" required autoFocus />
       <input
         className="field"

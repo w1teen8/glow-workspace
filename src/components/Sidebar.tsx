@@ -17,6 +17,8 @@ export function Sidebar() {
   const fixed = [
     { href: "/", emoji: "", title: "Прогресс" },
     { href: "/tasks", emoji: "", title: "Задачи" },
+    { href: "/p/a", emoji: "", title: state.people.a },
+    { href: "/p/b", emoji: "", title: state.people.b },
   ];
   const links = [
     ...fixed,
@@ -43,14 +45,20 @@ export function Sidebar() {
   return (
     <>
       <header className="topbar">
-        <span>{current ? current.title : "GLOW SPACE"}</span>
+        <span className="topbar-title">
+          <span className="brand-mark" aria-hidden />
+          {current ? current.title : "GLOW SPACE"}
+        </span>
         <button className="topbar-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? "Закрыть" : "Разделы"}
         </button>
       </header>
 
       <aside className="sidebar" data-open={open}>
-        <div className="brand">GLOW SPACE</div>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden />
+          GLOW SPACE
+        </div>
         <nav className="nav">
           {links.map((link, i) => (
             <div key={link.href} style={{ display: "contents" }}>

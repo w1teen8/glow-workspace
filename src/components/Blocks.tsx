@@ -5,6 +5,7 @@ import { formatDue, localDay } from "@/lib/dates";
 import { formatSize, shrinkImage } from "@/lib/images";
 import type { Item } from "@/lib/types";
 import { INLINE_MIME, LIMITS } from "@/lib/validate";
+import { FormatBar, RichText, handleFormatKey } from "./RichText";
 import { useWorkspace } from "./WorkspaceProvider";
 
 /** Высота textarea по содержимому. */
@@ -86,6 +87,7 @@ export function Blocks({ section }: { section: string }) {
       )}
 
       <div className="blk-composer">
+        <FormatBar target={composer} apply={(v) => setDraft(v)} />
         <textarea
           ref={composer}
           rows={2}
@@ -95,6 +97,7 @@ export function Blocks({ section }: { section: string }) {
           aria-label="Текст нового блока"
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
+            if (handleFormatKey(e, composer, (v) => setDraft(v))) return;
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
               void submit();
@@ -146,7 +149,8 @@ function BlockView({ item }: { item: Item }) {
   // Если в блоке несколько строк, первая — заголовок.
   const text = item.text ?? "";
   const lines = text.split("\n");
-  const hasTitle = lines.length > 1 && lines[0].trim().length > 0 && lines[0].length <= 120;
+  const hasTitle =
+    lines.length > 1 && lines[0].trim().length > 0 && lines[0].length <= 120 && !/^\s*[•\-–*]\s/.test(lines[0]);
   const title = hasTitle ? lines[0] : null;
   const body = hasTitle ? lines.slice(1).join("\n").replace(/^\n+/, "") : text;
   const isLong = body.length > LONG_CHARS || body.split("\n").length > LONG_LINES;
@@ -166,6 +170,7 @@ function BlockView({ item }: { item: Item }) {
       <div className="blk-body">
         {editing ? (
           <>
+            <FormatBar target={editor} apply={(v) => setDraft(v)} />
             <textarea
               ref={editor}
               className="blk-editor"
@@ -175,6 +180,7 @@ function BlockView({ item }: { item: Item }) {
               aria-label="Текст блока"
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
+                if (handleFormatKey(e, editor, (v) => setDraft(v))) return;
                 if (e.key === "Escape") void finishEdit(false);
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void finishEdit(true);
               }}
@@ -198,11 +204,11 @@ function BlockView({ item }: { item: Item }) {
                 if (e.key === "Enter" && e.target === e.currentTarget) startEdit();
               }}
             >
-              {title && <p className="blk-title">{linkify(title)}</p>}
+              {title && <h3 className="blk-title">{title.replace(/^#{1,2}\s+/, "")}</h3>}
               {body && (
-                <p className="blk-content" data-clamped={isLong && !expanded}>
-                  {linkify(body)}
-                </p>
+                <div className="blk-content" data-clamped={isLong && !expanded}>
+                  <RichText text={body} />
+                </div>
               )}
               {isLong && (
                 <button
@@ -247,16 +253,3 @@ function BlockView({ item }: { item: Item }) {
   );
 }
 
-const URL_RE = /(https?:\/\/[^\s<>"]+[^\s<>".,;:!?)\]])/g;
-
-function linkify(text: string) {
-  return text.split(URL_RE).map((part, i) =>
-    i % 2 === 1 ? (
-      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="link">
-        {part}
-      </a>
-    ) : (
-      part
-    ),
-  );
-}

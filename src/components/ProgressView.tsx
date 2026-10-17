@@ -13,7 +13,6 @@ function Row({ label, tasks }: { label: string; tasks: Task[] }) {
   return (
     <li>
       <Link href="/tasks" className="progress-row">
-        <span />
         <span className="progress-title">{label}</span>
         <span className="progress-count">{tasks.length ? `${done} из ${tasks.length}` : "нет задач"}</span>
         <span className="bar" aria-hidden>
@@ -29,6 +28,8 @@ export function ProgressView() {
   const { tasks, people } = state;
 
   const unassigned = tasks.filter((t) => !t.assignee);
+  const doneCount = tasks.filter((t) => t.done).length;
+  const percent = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
   const deadlines = tasks
     .filter((t) => !t.done && t.due)
     .sort((a, b) => a.due!.localeCompare(b.due!))
@@ -38,8 +39,16 @@ export function ProgressView() {
     <div className="overview">
       <section>
         <h1>Прогресс</h1>
+        <Link href="/tasks" className="stat">
+          <span className="stat-value">{percent}%</span>
+          <span className="stat-label">
+            {tasks.length ? `задач выполнено · ${doneCount} из ${tasks.length}` : "задач пока нет"}
+          </span>
+          <span className="bar bar-big" aria-hidden>
+            <span className="bar-fill" style={{ width: `${percent}%`, display: "block" }} />
+          </span>
+        </Link>
         <ul className="progress-list">
-          <Row label="Все задачи" tasks={tasks} />
           <Row label={people.a} tasks={tasks.filter((t) => t.assignee === "a")} />
           <Row label={people.b} tasks={tasks.filter((t) => t.assignee === "b")} />
           {unassigned.length > 0 && <Row label="Без исполнителя" tasks={unassigned} />}

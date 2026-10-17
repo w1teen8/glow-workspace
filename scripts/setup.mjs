@@ -42,6 +42,13 @@ if (titled === 0) {
   }
   console.log("✓ стартовые разделы");
 }
+// Служебные разделы личных вкладок: заметка и блоки Котика и Бусинки (PERSON_A / PERSON_B).
+for (const who of ["a", "b"]) {
+  await sql.query(
+    "INSERT INTO sections (slug, title, position) VALUES ($1, $2, -1) ON CONFLICT (slug) DO NOTHING",
+    [`person-${who}`, `Личное: ${who}`],
+  );
+}
 await sql.query("DELETE FROM sections WHERE title IS NULL");
 await sql.query("ALTER TABLE sections ALTER COLUMN title SET NOT NULL");
 

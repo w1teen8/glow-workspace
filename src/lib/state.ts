@@ -1,5 +1,5 @@
 import { db } from "./db";
-import type { Section } from "./sections";
+import { isPersonSection, type Section } from "./sections";
 import type { Item, People, Task, WorkspaceState } from "./types";
 
 export function getPeople(): People {
@@ -55,11 +55,9 @@ export async function loadState(): Promise<WorkspaceState> {
     sql.query(`SELECT ${ITEM_COLUMNS} FROM items WHERE deleted_at IS NULL ORDER BY created_at, id`),
   ]);
 
-  const sections: Section[] = sectionRows.map((row) => ({
-    slug: row.slug as string,
-    title: row.title as string,
-    emoji: row.emoji as string,
-  }));
+  const sections: Section[] = sectionRows
+    .filter((row) => !isPersonSection(row.slug as string))
+    .map((row) => ({ slug: row.slug as string, title: row.title as string, emoji: row.emoji as string }));
   const notes: WorkspaceState["notes"] = {};
   for (const row of sectionRows) notes[row.slug as string] = row.note as string;
 
