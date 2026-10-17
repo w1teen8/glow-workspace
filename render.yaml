@@ -1,0 +1,21 @@
+# Render Blueprint: Dashboard → New → Blueprint → выбрать этот репозиторий.
+# Секреты (sync: false) Render спросит при создании сервиса.
+services:
+  - type: web
+    name: glow-workspace
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PERSON_A
+        sync: false
+      - key: PERSON_B
+        sync: false

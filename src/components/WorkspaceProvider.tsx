@@ -1,0 +1,240 @@
+"use client";
+
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import type { SectionSlug } from "@/lib/sections";
+import type { Item, Task, WorkspaceState } from "@/lib/types";
+
+export const POLL_MS = 5000;
+
+type TaskPatch = Partial<Pick<Task, "text" | "assignee" | "due" | "done">>;
+
+type Workspace = {
+  state: WorkspaceState;
+  addTask: (section: SectionSlug, text: string) => void;
+  updateTask: (id: number, patch: TaskPatch) => void;
+  deleteTask: (task: Task) => void;
+  saveNote: (section: SectionSlug, note: string) => Promise<boolean>;
+  addItem: (section: SectionSlug, content: { text?: string; file?: File }) => Promise<boolean>;
+  deleteItem: (item: Item) => void;
+  notify: (text: string) => void;
+};
+
+const WorkspaceContext = createContext<Workspace | null>(null);
+
+export function useWorkspace() {
+  const ctx = useContext(WorkspaceContext);
+  if (!ctx) throw new Error("useWorkspace outside WorkspaceProvider");
+  return ctx;
+}
+
+/** Вызывает fn сразу, когда вкладка становится видимой, и дальше раз в interval — пока она видима. */
+export function useVisiblePolling(fn: () => void, interval: number) {
+  const fnRef = useRef(fn);
+  fnRef.current = fn;
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      clearInterval(timer);
+      if (document.visibilityState === "visible") {
+        timer = setInterval(() => fnRef.current(), interval);
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fnRef.current();
+      start();
+    };
+    start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [interval]);
+}
+
+async function send(url: string, method: string, body?: unknown) {
+  const isForm = body instanceof FormData;
+  const res = await fetch(url, {
+    method,
+    headers: body === undefined || isForm ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
+  });
+  if (res.status === 401) window.location.href = "/login";
+  if (!res.ok) throw new Error(`${method} ${url}: ${res.status}`);
+  return res;
+}
+
+export function WorkspaceProvider({
+  initial,
+  children,
+}: {
+  initial: WorkspaceState;
+  children: React.ReactNode;
+}) {
+  const [state, setState] = useState(initial);
+  const [toast, setToast] = useState<{ text: string; undo?: () => void } | null>(null);
+
+  // Пока идут свои изменения, ответы опроса могут быть устаревшими —
+  // такие ответы отбрасываются, а после изменения состояние перечитывается.
+  const pending = useRef(0);
+  const epoch = useRef(0);
+  const tempId = useRef(-1);
+
+  const refresh = useCallback(async () => {
+    const started = epoch.current;
+    try {
+      const res = await fetch("/api/state", { cache: "no-store" });
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      if (!res.ok) return;
+      const next: WorkspaceState = await res.json();
+      if (pending.current === 0 && epoch.current === started) setState(next);
+    } catch {
+      // сеть пропала — попробуем на следующем шаге опроса
+    }
+  }, []);
+
+  useVisiblePolling(refresh, POLL_MS);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const mutate = useCallback(
+    async (optimistic: (s: WorkspaceState) => WorkspaceState, request: () => Promise<unknown>) => {
+      epoch.current++;
+      pending.current++;
+      setState(optimistic);
+      let ok = true;
+      try {
+        await request();
+      } catch {
+        ok = false;
+        setToast({ text: "Не удалось сохранить. Проверь соединение." });
+      } finally {
+        pending.current--;
+        epoch.current++;
+        void refresh();
+      }
+      return ok;
+    },
+    [refresh],
+  );
+
+  const createTask = useCallback(
+    (fields: Pick<Task, "section" | "text" | "assignee" | "due" | "done">) => {
+      const id = tempId.current--;
+      const now = new Date().toISOString();
+      const draft: Task = { ...fields, id, doneAt: fields.done ? now : null, createdAt: now };
+      void mutate(
+        (s) => ({ ...s, tasks: [...s.tasks, draft] }),
+        async () => {
+          const created: Task = await (await send("/api/tasks", "POST", fields)).json();
+          setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? created : t)) }));
+        },
+      );
+    },
+    [mutate],
+  );
+
+  const value: Workspace = {
+    state,
+
+    addTask: (section, text) => createTask({ section, text, assignee: null, due: null, done: false }),
+
+    updateTask: (id, patch) => {
+      if (id < 0) return;
+      void mutate(
+        (s) => ({
+          ...s,
+          tasks: s.tasks.map((t) =>
+            t.id === id
+              ? {
+                  ...t,
+                  ...patch,
+                  doneAt: patch.done === undefined ? t.doneAt : patch.done ? new Date().toISOString() : null,
+                }
+              : t,
+          ),
+        }),
+        () => send(`/api/tasks/${id}`, "PATCH", patch),
+      );
+    },
+
+    deleteTask: (task) => {
+      if (task.id < 0) return;
+      void mutate(
+        (s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== task.id) }),
+        () => send(`/api/tasks/${task.id}`, "DELETE"),
+      ).then((ok) => {
+        if (!ok) return;
+        const { section, text, assignee, due, done } = task;
+        setToast({
+          text: "Задача удалена",
+          undo: () => {
+            setToast(null);
+            createTask({ section, text, assignee, due, done });
+          },
+        });
+      });
+    },
+
+    saveNote: (section, note) =>
+      mutate(
+        (s) => ({ ...s, notes: { ...s.notes, [section]: note } }),
+        () => send(`/api/notes/${section}`, "PUT", { note }),
+      ),
+
+    addItem: (section, { text, file }) => {
+      const form = new FormData();
+      form.set("section", section);
+      if (text) form.set("text", text);
+      if (file) form.set("file", file);
+      return mutate(
+        (s) => s,
+        async () => {
+          const created: Item = await (await send("/api/items", "POST", form)).json();
+          setState((s) => ({ ...s, items: [...s.items, created] }));
+        },
+      );
+    },
+
+    deleteItem: (item) => {
+      void mutate(
+        (s) => ({ ...s, items: s.items.filter((i) => i.id !== item.id) }),
+        () => send(`/api/items/${item.id}`, "DELETE"),
+      ).then((ok) => {
+        if (!ok) return;
+        setToast({
+          text: item.file ? "Файл удалён" : "Запись удалена",
+          undo: () => {
+            setToast(null);
+            void mutate(
+              (s) => ({ ...s, items: [...s.items, item].sort((a, b) => a.id - b.id) }),
+              () => send(`/api/items/${item.id}`, "PATCH", { deleted: false }),
+            );
+          },
+        });
+      });
+    },
+
+    notify: (text) => setToast({ text }),
+  };
+
+  return (
+    <WorkspaceContext.Provider value={value}>
+      {children}
+      {toast && (
+        <div className="toast" role="status">
+          <span>{toast.text}</span>
+          {toast.undo && <button onClick={toast.undo}>Вернуть</button>}
+        </div>
+      )}
+    </WorkspaceContext.Provider>
+  );
+}
