@@ -92,7 +92,7 @@ export function TaskRow({ task }: { task: Task }) {
             aria-label={task.due ? `Срок: ${formatDue(task.due)}. Изменить` : "Поставить срок"}
             onClick={openDatePicker}
           >
-            {task.due ? formatDue(task.due) : "срок"}
+            {task.due ? formatDue(task.due) : "+ срок"}
           </button>
           <input
             ref={dateInput}

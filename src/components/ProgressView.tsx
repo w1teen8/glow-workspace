@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { daysFromToday, formatDue } from "@/lib/dates";
 import type { Task } from "@/lib/types";
 import { useWorkspace } from "./WorkspaceProvider";
@@ -58,7 +59,7 @@ export function ProgressView() {
       <section>
         <h2 className="deadlines-title">Ближайшие сроки</h2>
         {deadlines.length === 0 ? (
-          <p className="muted">Сроков пока нет. Их можно поставить у любой задачи.</p>
+          <p className="muted">Сроков пока нет.</p>
         ) : (
           <ul className="deadline-list">
             {deadlines.map((task) => {
@@ -87,7 +88,73 @@ export function ProgressView() {
             })}
           </ul>
         )}
+        <AddDeadline />
       </section>
     </div>
+  );
+}
+
+/** «+ Добавить срок»: выбрать открытую задачу без срока и дату. */
+function AddDeadline() {
+  const { state, updateTask } = useWorkspace();
+  const [open, setOpen] = useState(false);
+  const [taskId, setTaskId] = useState("");
+  const [due, setDue] = useState("");
+
+  const candidates = state.tasks.filter((t) => !t.done && !t.due && t.id > 0);
+
+  if (!open) {
+    return (
+      <button className="add-deadline" onClick={() => setOpen(true)} disabled={candidates.length === 0}>
+        {candidates.length ? "+ Добавить срок" : "У всех открытых задач уже есть срок"}
+      </button>
+    );
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!taskId || !due) return;
+    updateTask(Number(taskId), { due });
+    setTaskId("");
+    setDue("");
+    setOpen(false);
+  }
+
+  return (
+    <form className="deadline-form" onSubmit={submit}>
+      <select
+        className="field"
+        value={taskId}
+        onChange={(e) => setTaskId(e.target.value)}
+        aria-label="Задача"
+        autoFocus
+        required
+      >
+        <option value="" disabled>
+          Выберите задачу…
+        </option>
+        {candidates.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.text}
+          </option>
+        ))}
+      </select>
+      <input
+        className="field"
+        type="date"
+        value={due}
+        onChange={(e) => setDue(e.target.value)}
+        aria-label="Срок"
+        required
+      />
+      <div className="deadline-form-actions">
+        <button type="button" className="attach" onClick={() => setOpen(false)}>
+          Отмена
+        </button>
+        <button className="button button-small" disabled={!taskId || !due}>
+          Добавить
+        </button>
+      </div>
+    </form>
   );
 }

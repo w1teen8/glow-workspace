@@ -552,6 +552,66 @@ h2 {
   }
 }
 
+.add-deadline {
+  margin-top: 12px;
+  padding: 8px 4px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  transition: color var(--ease);
+}
+
+.add-deadline:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.add-deadline:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+.deadline-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+}
+
+.deadline-form select.field {
+  appearance: none;
+  min-width: 0;
+  padding-right: 36px;
+  background: var(--bg)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%239b9994' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    right 12px center / 14px no-repeat;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.deadline-form select.field option {
+  background: var(--surface-2);
+}
+
+.deadline-form input[type="date"] {
+  color-scheme: dark;
+}
+
+.deadline-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  .deadline-form {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Заметка ---------- */
 
 .note {
