@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Logo } from "@/components/Logo";
 
 export function LoginForm() {
   const [error, setError] = useState("");
@@ -32,8 +33,7 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit}>
       <h1 className="login-title">
-        <span className="brand-mark" aria-hidden />
-        GLOW SPACE
+        <Logo height={24} />
       </h1>
       <p className="login-sub">Рабочее пространство на двоих</p>
       <input className="field" name="login" placeholder="Логин" autoComplete="username" required autoFocus />

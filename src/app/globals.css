@@ -3,19 +3,22 @@
    ========================================================= */
 
 :root {
-  --bg: #0c0c0e;
-  --panel: #111114;
-  --surface: #16161a;
-  --surface-2: #1d1d22;
-  --line: rgba(255, 255, 255, 0.07);
-  --line-strong: rgba(255, 255, 255, 0.13);
-  --text: #ecebe8;
-  --muted: #9b9994;
-  --faint: #66645f;
-  --accent: #f2b759;
-  --accent-soft: rgba(242, 183, 89, 0.12);
-  --accent-line: rgba(242, 183, 89, 0.35);
-  --on-accent: #1e1405;
+  /* Палитра логотипа Glow Space */
+  --bg: #f2f3f5;
+  --panel: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #e8ebef;
+  --line: #dce0e6;
+  --line-strong: #c6ccd5;
+  --text: #0e1116;
+  --muted: #5a6472;
+  --faint: #8a93a0;
+  --accent: #2b3a52;
+  --accent-soft: rgba(43, 58, 82, 0.08);
+  --accent-line: rgba(43, 58, 82, 0.4);
+  --on-accent: #ffffff;
+  /* знак на тёмном фоне */
+  --accent-on-dark: #a8bcd8;
 
   /* Три размера шрифта на всё приложение */
   --fs-small: 13px;
@@ -97,7 +100,7 @@ h2 {
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted);
   margin: 0 0 14px;
 }
 
@@ -116,15 +119,31 @@ h2 {
   text-underline-offset: 3px;
 }
 
-/* Знак бренда — маленький «огонёк» */
-.brand-mark {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
+/* Логотип: знак + надпись Outfit, как в макете */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+}
+
+.logo-mark {
   flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft), 0 0 16px 2px rgba(242, 183, 89, 0.45);
+  color: var(--accent);
+}
+
+.wordmark {
+  font-family: var(--font-logo), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.wordmark-space {
+  font-weight: 300;
+  color: var(--accent);
 }
 
 /* ---------- Каркас ---------- */
@@ -151,12 +170,9 @@ h2 {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 0 12px;
   margin-bottom: 32px;
-  font-weight: 500;
-  font-size: var(--fs-small);
-  letter-spacing: 0.14em;
+  font-size: 17px;
 }
 
 .nav {
@@ -179,7 +195,7 @@ h2 {
 
 .nav-link:hover {
   color: var(--text);
-  background: var(--surface);
+  background: var(--bg);
 }
 
 .nav-link[aria-current="page"] {
@@ -233,7 +249,7 @@ h2 {
   margin-top: 6px;
   height: 40px;
   padding: 0 12px;
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--accent-line);
   border-radius: var(--radius-sm);
   outline: none;
@@ -585,7 +601,7 @@ h2 {
   min-width: 0;
   padding-right: 36px;
   background: var(--bg)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%239b9994' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%235a6472' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     right 12px center / 14px no-repeat;
   text-overflow: ellipsis;
   cursor: pointer;
@@ -596,7 +612,7 @@ h2 {
 }
 
 .deadline-form input[type="date"] {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .deadline-form-actions {
@@ -709,7 +725,7 @@ h2 {
 
 .check:checked {
   background: var(--accent)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%231e1405' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     center / 14px no-repeat;
   border-color: var(--accent);
 }
@@ -865,7 +881,7 @@ h2 {
   height: 56px;
   padding: 0 16px 0 54px;
   background: var(--surface)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3v10M3 8h10' stroke='%2366645f' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3v10M3 8h10' stroke='%238a93a0' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
     18px center / 16px no-repeat;
   border: 1px solid var(--line);
   border-radius: 0 0 var(--radius) var(--radius);
@@ -1048,8 +1064,8 @@ h2 {
 }
 
 .rich strong {
-  font-weight: 500;
-  color: #fff;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .item-image {
@@ -1203,8 +1219,8 @@ h2 {
   gap: 18px;
   max-width: calc(100vw - 32px);
   padding: 12px 14px 12px 18px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-strong);
+  background: var(--accent);
+  color: #fff;
   border-radius: var(--radius-sm);
   font-size: var(--fs-small);
 }
@@ -1212,12 +1228,12 @@ h2 {
 .toast button {
   padding: 4px 8px;
   border-radius: 6px;
-  color: var(--accent);
+  color: var(--accent-on-dark);
   font-weight: 500;
 }
 
 .toast button:hover {
-  background: var(--accent-soft);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ---------- Вход ---------- */
@@ -1242,12 +1258,8 @@ h2 {
 }
 
 .login-title {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0;
-  font-size: var(--fs-body);
-  letter-spacing: 0.14em;
+  margin: 0 0 4px;
+  font-size: 22px;
 }
 
 .login-sub {

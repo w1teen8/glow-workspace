@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SECTION_TITLE_MAX } from "@/lib/sections";
+import { Logo, LogoMark } from "./Logo";
 import { useWorkspace } from "./WorkspaceProvider";
 
 export function Sidebar() {
@@ -46,7 +47,7 @@ export function Sidebar() {
     <>
       <header className="topbar">
         <span className="topbar-title">
-          <span className="brand-mark" aria-hidden />
+          <LogoMark height={16} />
           {current ? current.title : "GLOW SPACE"}
         </span>
         <button className="topbar-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -56,8 +57,7 @@ export function Sidebar() {
 
       <aside className="sidebar" data-open={open}>
         <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          GLOW SPACE
+          <Logo height={18} />
         </div>
         <nav className="nav">
           {links.map((link, i) => (
