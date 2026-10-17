@@ -19,6 +19,32 @@ for (const statement of schema.split(/;\s*\n/).map((s) => s.trim()).filter(Boole
 }
 console.log("✓ таблицы");
 
+// Стартовые разделы создаются один раз — пока в базе нет ни одного раздела с названием.
+// Дальше разделы добавляются и удаляются в интерфейсе, и повторный setup их не возвращает.
+const DEFAULT_SECTIONS = [
+  ["concept", "💡", "Концепция"],
+  ["mvp", "📋", "MVP"],
+  ["stack", "🔗", "Стек"],
+  ["research", "🎤", "Исследование"],
+  ["ux", "💭", "UX/UI"],
+  ["expenses", "💲", "Расходы"],
+  ["motivation", "🔥", "Мотивация"],
+  ["general", "#", "General"],
+];
+const [{ titled }] = await sql.query("SELECT count(*)::int AS titled FROM sections WHERE title IS NOT NULL");
+if (titled === 0) {
+  for (const [i, [slug, emoji, title]] of DEFAULT_SECTIONS.entries()) {
+    await sql.query(
+      `INSERT INTO sections (slug, title, emoji, position) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, emoji = EXCLUDED.emoji, position = EXCLUDED.position`,
+      [slug, title, emoji, i],
+    );
+  }
+  console.log("✓ стартовые разделы");
+}
+await sql.query("DELETE FROM sections WHERE title IS NULL");
+await sql.query("ALTER TABLE sections ALTER COLUMN title SET NOT NULL");
+
 const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);
 await sql.query(
   `INSERT INTO users (login, password_hash) VALUES ($1, $2)

@@ -1,7 +1,6 @@
 import { authorize, json } from "@/lib/api";
 import { db } from "@/lib/db";
-import { isSectionSlug } from "@/lib/sections";
-import { ITEM_COLUMNS, toItem } from "@/lib/state";
+import { ITEM_COLUMNS, sectionExists, toItem } from "@/lib/state";
 import { LIMITS, cleanText } from "@/lib/validate";
 
 // Принимает multipart/form-data: section, text и/или file.
@@ -22,9 +21,10 @@ export async function POST(req: Request) {
   const file = form.get("file");
   const hasFile = file instanceof File && file.size > 0;
 
-  if (!isSectionSlug(section) || (rawText && !text) || (!text && !hasFile)) {
+  if ((rawText && !text) || (!text && !hasFile)) {
     return json({ error: "bad item" }, 400);
   }
+  if (!(await sectionExists(section))) return json({ error: "section not found" }, 404);
   if (hasFile && file.size > LIMITS.fileBytes) {
     return json({ error: "Файл больше 4 МБ" }, 413);
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import type { SectionSlug } from "@/lib/sections";
+import type { Section } from "@/lib/sections";
 import type { Item, Task, WorkspaceState } from "@/lib/types";
 
 export const POLL_MS = 5000;
@@ -10,12 +10,15 @@ type TaskPatch = Partial<Pick<Task, "text" | "assignee" | "due" | "done">>;
 
 type Workspace = {
   state: WorkspaceState;
-  addTask: (section: SectionSlug, text: string) => void;
+  addTask: (text: string) => void;
   updateTask: (id: number, patch: TaskPatch) => void;
   deleteTask: (task: Task) => void;
-  saveNote: (section: SectionSlug, note: string) => Promise<boolean>;
-  addItem: (section: SectionSlug, content: { text?: string; file?: File }) => Promise<boolean>;
+  saveNote: (section: string, note: string) => Promise<boolean>;
+  addItem: (section: string, content: { text?: string; file?: File }) => Promise<boolean>;
+  updateItem: (id: number, text: string) => Promise<boolean>;
   deleteItem: (item: Item) => void;
+  addSection: (title: string) => Promise<Section | null>;
+  deleteSection: (slug: string) => Promise<boolean>;
   notify: (text: string) => void;
 };
 
@@ -127,7 +130,7 @@ export function WorkspaceProvider({
   );
 
   const createTask = useCallback(
-    (fields: Pick<Task, "section" | "text" | "assignee" | "due" | "done">) => {
+    (fields: Pick<Task, "text" | "assignee" | "due" | "done">) => {
       const id = tempId.current--;
       const now = new Date().toISOString();
       const draft: Task = { ...fields, id, doneAt: fields.done ? now : null, createdAt: now };
@@ -145,7 +148,7 @@ export function WorkspaceProvider({
   const value: Workspace = {
     state,
 
-    addTask: (section, text) => createTask({ section, text, assignee: null, due: null, done: false }),
+    addTask: (text) => createTask({ text, assignee: null, due: null, done: false }),
 
     updateTask: (id, patch) => {
       if (id < 0) return;
@@ -173,12 +176,12 @@ export function WorkspaceProvider({
         () => send(`/api/tasks/${task.id}`, "DELETE"),
       ).then((ok) => {
         if (!ok) return;
-        const { section, text, assignee, due, done } = task;
+        const { text, assignee, due, done } = task;
         setToast({
           text: "Задача удалена",
           undo: () => {
             setToast(null);
-            createTask({ section, text, assignee, due, done });
+            createTask({ text, assignee, due, done });
           },
         });
       });
@@ -204,6 +207,12 @@ export function WorkspaceProvider({
       );
     },
 
+    updateItem: (id, text) =>
+      mutate(
+        (s) => ({ ...s, items: s.items.map((i) => (i.id === id ? { ...i, text: text.trim() || null } : i)) }),
+        () => send(`/api/items/${id}`, "PATCH", { text }),
+      ),
+
     deleteItem: (item) => {
       void mutate(
         (s) => ({ ...s, items: s.items.filter((i) => i.id !== item.id) }),
@@ -211,7 +220,7 @@ export function WorkspaceProvider({
       ).then((ok) => {
         if (!ok) return;
         setToast({
-          text: item.file ? "Файл удалён" : "Запись удалена",
+          text: item.file ? "Файл удалён" : "Блок удалён",
           undo: () => {
             setToast(null);
             void mutate(
@@ -222,6 +231,28 @@ export function WorkspaceProvider({
         });
       });
     },
+
+    addSection: async (title) => {
+      let created: Section | null = null;
+      await mutate(
+        (s) => s,
+        async () => {
+          created = await (await send("/api/sections", "POST", { title })).json();
+          setState((s) => ({ ...s, sections: [...s.sections, created!], notes: { ...s.notes, [created!.slug]: "" } }));
+        },
+      );
+      return created;
+    },
+
+    deleteSection: (slug) =>
+      mutate(
+        (s) => ({
+          ...s,
+          sections: s.sections.filter((x) => x.slug !== slug),
+          items: s.items.filter((i) => i.section !== slug),
+        }),
+        () => send(`/api/sections/${slug}`, "DELETE"),
+      ),
 
     notify: (text) => setToast({ text }),
   };

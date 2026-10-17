@@ -1,29 +1,21 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Materials } from "@/components/Materials";
-import { Note } from "@/components/Note";
-import { TaskList } from "@/components/TaskList";
-import { getSection } from "@/lib/sections";
+import { SectionView } from "@/components/SectionView";
+import { db } from "@/lib/db";
 
 type Props = { params: Promise<{ slug: string }> };
 
+async function findTitle(slug: string): Promise<string | null> {
+  const [row] = await db()`SELECT title FROM sections WHERE slug = ${slug}`;
+  return (row?.title as string) ?? null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const section = getSection((await params).slug);
-  return { title: section?.title };
+  return { title: (await findTitle((await params).slug)) ?? undefined };
 }
 
 export default async function SectionPage({ params }: Props) {
-  const section = getSection((await params).slug);
-  if (!section) notFound();
-
-  return (
-    <div className="page">
-      <h1>
-        {section.emoji} {section.title}
-      </h1>
-      <Note key={section.slug} section={section.slug} />
-      <TaskList section={section.slug} />
-      <Materials section={section.slug} />
-    </div>
-  );
+  const { slug } = await params;
+  if (!(await findTitle(slug))) notFound();
+  return <SectionView slug={slug} />;
 }

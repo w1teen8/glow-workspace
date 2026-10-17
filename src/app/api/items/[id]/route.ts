@@ -1,6 +1,6 @@
 import { authorize, json, readJson } from "@/lib/api";
 import { db } from "@/lib/db";
-import { parseId } from "@/lib/validate";
+import { LIMITS, parseId } from "@/lib/validate";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,16 +20,33 @@ export async function DELETE(req: Request, ctx: Ctx) {
   return json({ ok: true });
 }
 
-/** { deleted: false } — вернуть удалённый материал. */
+/**
+ * { text: "…" } — изменить текст блока (пустой текст разрешён только у блока с файлом);
+ * { deleted: false } — вернуть удалённый блок.
+ */
 export async function PATCH(req: Request, ctx: Ctx) {
   const denied = await authorize(req);
   if (denied) return denied;
 
   const id = parseId((await ctx.params).id);
   const body = await readJson(req);
-  if (!id || body?.deleted !== false) return json({ error: "bad request" }, 400);
+  if (!id || !body) return json({ error: "bad request" }, 400);
 
-  const rows = await db()`UPDATE items SET deleted_at = NULL WHERE id = ${id} RETURNING id`;
+  if (body.deleted === false) {
+    const rows = await db()`UPDATE items SET deleted_at = NULL WHERE id = ${id} RETURNING id`;
+    if (!rows.length) return json({ error: "not found" }, 404);
+    return json({ ok: true });
+  }
+
+  if (typeof body.text !== "string" || body.text.length > LIMITS.itemText) {
+    return json({ error: "bad request" }, 400);
+  }
+  const text = body.text.trim() || null;
+  const rows = await db()`
+    UPDATE items SET text = ${text}
+    WHERE id = ${id} AND deleted_at IS NULL AND (${text}::text IS NOT NULL OR data IS NOT NULL)
+    RETURNING id
+  `;
   if (!rows.length) return json({ error: "not found" }, 404);
   return json({ ok: true });
 }

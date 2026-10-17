@@ -3,7 +3,7 @@ import type { Assignee } from "./types";
 export const LIMITS = {
   taskText: 500,
   note: 20000,
-  itemText: 10000,
+  itemText: 50000,
   // Файлы лежат в базе, а у бесплатного Neon 0,5 ГБ — поэтому не больше 4 МБ на файл.
   fileBytes: 4 * 1024 * 1024,
 };

@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { SectionSlug } from "@/lib/sections";
 import { LIMITS } from "@/lib/validate";
 import { useWorkspace } from "./WorkspaceProvider";
 
 const SAVE_DELAY_MS = 800;
 
-export function Note({ section }: { section: SectionSlug }) {
+export function Note({ section }: { section: string }) {
   const { state, saveNote } = useWorkspace();
   const serverValue = state.notes[section] ?? "";
 

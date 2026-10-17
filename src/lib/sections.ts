@@ -1,23 +1,14 @@
-// Единственный источник списка разделов — и для интерфейса, и для сервера.
-export const SECTIONS = [
-  { slug: "concept", emoji: "💡", title: "Концепция" },
-  { slug: "mvp", emoji: "📋", title: "MVP" },
-  { slug: "stack", emoji: "🔗", title: "Стек" },
-  { slug: "research", emoji: "🎤", title: "Исследование" },
-  { slug: "ux", emoji: "💭", title: "UX/UI" },
-  { slug: "tasks", emoji: "📊", title: "Задачи" },
-  { slug: "expenses", emoji: "💲", title: "Расходы" },
-  { slug: "motivation", emoji: "🔥", title: "Мотивация" },
-  { slug: "general", emoji: "#", title: "General" },
-] as const;
+export type Section = { slug: string; emoji: string; title: string };
 
-export type SectionSlug = (typeof SECTIONS)[number]["slug"];
-export type Section = (typeof SECTIONS)[number];
+export const SECTION_TITLE_MAX = 60;
+export const SECTIONS_MAX = 50;
 
-export function isSectionSlug(value: unknown): value is SectionSlug {
-  return typeof value === "string" && SECTIONS.some((s) => s.slug === value);
-}
+const LEADING_EMOJI = /^((?:\p{Extended_Pictographic}|\p{Regional_Indicator})(?:️|‍|\p{Extended_Pictographic}|\p{Regional_Indicator}|\p{Emoji_Modifier})*)\s*/u;
 
-export function getSection(slug: string): Section | undefined {
-  return SECTIONS.find((s) => s.slug === slug);
+/** «🚀 Маркетинг» → { emoji: "🚀", title: "Маркетинг" }. Без эмодзи значок остаётся пустым. */
+export function splitEmoji(input: string): { emoji: string; title: string } {
+  const text = input.trim();
+  const match = text.match(LEADING_EMOJI);
+  if (!match || match[0].length === text.length) return { emoji: "", title: text };
+  return { emoji: match[1], title: text.slice(match[0].length).trim() };
 }

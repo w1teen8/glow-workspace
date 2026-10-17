@@ -19,13 +19,21 @@ CREATE INDEX IF NOT EXISTS login_attempts_ip_at ON login_attempts (ip, at);
 
 CREATE TABLE IF NOT EXISTS sections (
   slug       text PRIMARY KEY,
+  title      text NOT NULL,
+  emoji      text NOT NULL DEFAULT '',
+  position   integer NOT NULL DEFAULT 0,
   note       text NOT NULL DEFAULT '',
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Для баз, созданных до того, как разделы стали редактируемыми.
+-- setup.mjs заполняет title и делает его обязательным.
+ALTER TABLE sections ADD COLUMN IF NOT EXISTS title text;
+ALTER TABLE sections ADD COLUMN IF NOT EXISTS emoji text NOT NULL DEFAULT '';
+ALTER TABLE sections ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;
+
 CREATE TABLE IF NOT EXISTS tasks (
   id         serial PRIMARY KEY,
-  section    text NOT NULL,
   text       text NOT NULL,
   assignee   text CHECK (assignee IN ('a', 'b')),
   due        date,
@@ -34,9 +42,10 @@ CREATE TABLE IF NOT EXISTS tasks (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS tasks_section ON tasks (section);
+-- Задачи общие, без привязки к разделу: живут только во вкладке «Задачи».
+ALTER TABLE tasks DROP COLUMN IF EXISTS section;
 
--- Материалы раздела: текст или файл. Файлы лежат прямо в базе (до 4 МБ каждый),
+-- Блоки раздела: текст и/или файл. Файлы лежат прямо в базе (до 4 МБ каждый),
 -- чтобы не заводить отдельное хранилище и отдавать их только после входа.
 CREATE TABLE IF NOT EXISTS items (
   id         serial PRIMARY KEY,

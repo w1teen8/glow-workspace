@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import type { SectionSlug } from "@/lib/sections";
 import { LIMITS } from "@/lib/validate";
 import { TaskRow } from "./TaskRow";
 import { useWorkspace } from "./WorkspaceProvider";
 
-export function TaskList({ section }: { section: SectionSlug }) {
+export function TaskList() {
   const { state, addTask } = useWorkspace();
   const [draft, setDraft] = useState("");
   const [showDone, setShowDone] = useState(false);
 
-  const tasks = state.tasks.filter((t) => t.section === section);
+  const tasks = state.tasks;
   const open = tasks.filter((t) => !t.done);
   const done = tasks
     .filter((t) => t.done)
@@ -19,7 +18,6 @@ export function TaskList({ section }: { section: SectionSlug }) {
 
   return (
     <section className="block">
-      <h2>Задачи</h2>
       <ul className="tasks">
         {open.map((task) => (
           <TaskRow key={task.id} task={task} />
@@ -37,7 +35,7 @@ export function TaskList({ section }: { section: SectionSlug }) {
         onKeyDown={(e) => {
           if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
           const text = draft.trim();
-          if (text) addTask(section, text);
+          if (text) addTask(text);
           setDraft("");
         }}
       />
