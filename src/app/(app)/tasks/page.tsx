@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { TaskList } from "@/components/TaskList";
+import { TaskBoard } from "@/components/TaskBoard";
 
 export const metadata: Metadata = { title: "Задачи" };
 
 export default function TasksPage() {
   return (
-    <div className="page">
+    <div className="page page-wide">
       <h1>Задачи</h1>
-      <TaskList />
+      <TaskBoard />
     </div>
   );
 }

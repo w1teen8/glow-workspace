@@ -8,15 +8,24 @@ import { TaskRow } from "./TaskRow";
 import { useWorkspace } from "./WorkspaceProvider";
 
 /**
- * Без assignee — общий список с полем добавления (вкладка «Задачи»).
- * С assignee — только задачи этого человека; новые ставятся во вкладке «Задачи».
+ * Без assignee — все задачи. С assignee (null — «без исполнителя») — только его задачи.
+ * addable — поле добавления (новая задача получает этого исполнителя); без него — подсказка,
+ * что задачи ставятся во вкладке «Задачи».
  */
-export function TaskList({ assignee }: { assignee?: Assignee }) {
+export function TaskList({
+  assignee,
+  title = "Задачи",
+  addable = assignee === undefined,
+}: {
+  assignee?: Assignee | null;
+  title?: string;
+  addable?: boolean;
+}) {
   const { state, addTask } = useWorkspace();
   const [draft, setDraft] = useState("");
   const [showDone, setShowDone] = useState(false);
 
-  const tasks = assignee ? state.tasks.filter((t) => t.assignee === assignee) : state.tasks;
+  const tasks = assignee === undefined ? state.tasks : state.tasks.filter((t) => t.assignee === assignee);
   const open = tasks.filter((t) => !t.done);
   const done = tasks
     .filter((t) => t.done)
@@ -24,14 +33,34 @@ export function TaskList({ assignee }: { assignee?: Assignee }) {
 
   return (
     <section className="block">
-      {assignee && <h2>Задачи</h2>}
+      {assignee !== undefined && (
+        <h2>
+          {title} <span className="count">{open.length}</span>
+        </h2>
+      )}
       <ul className="tasks">
         {open.map((task) => (
           <TaskRow key={task.id} task={task} />
         ))}
       </ul>
 
-      {assignee ? (
+      {addable ? (
+        <input
+          className="add-task"
+          value={draft}
+          maxLength={LIMITS.taskText}
+          placeholder="Добавить задачу…"
+          aria-label={assignee === undefined ? "Новая задача" : `Новая задача: ${title}`}
+          enterKeyHint="done"
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+            const text = draft.trim();
+            if (text) addTask(text, assignee ?? null);
+            setDraft("");
+          }}
+        />
+      ) : (
         <p className="small muted tasks-hint">
           {open.length === 0 && "Открытых задач нет. "}
           Новые задачи ставятся во вкладке{" "}
@@ -40,22 +69,6 @@ export function TaskList({ assignee }: { assignee?: Assignee }) {
           </Link>
           .
         </p>
-      ) : (
-        <input
-          className="add-task"
-          value={draft}
-          maxLength={LIMITS.taskText}
-          placeholder="Добавить задачу…"
-          aria-label="Новая задача"
-          enterKeyHint="done"
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
-            const text = draft.trim();
-            if (text) addTask(text);
-            setDraft("");
-          }}
-        />
       )}
 
       {done.length > 0 && (

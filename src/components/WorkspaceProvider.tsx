@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Section } from "@/lib/sections";
-import type { Item, Task, WorkspaceState } from "@/lib/types";
+import type { Assignee, Item, Task, WorkspaceState } from "@/lib/types";
 
 export const POLL_MS = 5000;
 
@@ -10,7 +10,7 @@ type TaskPatch = Partial<Pick<Task, "text" | "assignee" | "due" | "done">>;
 
 type Workspace = {
   state: WorkspaceState;
-  addTask: (text: string) => void;
+  addTask: (text: string, assignee?: Assignee | null) => void;
   updateTask: (id: number, patch: TaskPatch) => void;
   deleteTask: (task: Task) => void;
   saveNote: (section: string, note: string) => Promise<boolean>;
@@ -148,7 +148,7 @@ export function WorkspaceProvider({
   const value: Workspace = {
     state,
 
-    addTask: (text) => createTask({ text, assignee: null, due: null, done: false }),
+    addTask: (text, assignee = null) => createTask({ text, assignee, due: null, done: false }),
 
     updateTask: (id, patch) => {
       if (id < 0) return;
