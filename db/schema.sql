@@ -79,18 +79,8 @@ CREATE TABLE IF NOT EXISTS items (
 
 CREATE INDEX IF NOT EXISTS items_section ON items (section);
 
--- «Решаем MVP»: кандидаты в первую версию, голоса обоих и итоговое решение.
--- decision NULL — ещё обсуждаем. Удаление мягкое, как у задач.
-CREATE TABLE IF NOT EXISTS features (
-  id         serial PRIMARY KEY,
-  title      text NOT NULL,
-  note       text NOT NULL DEFAULT '',
-  vote_a     text CHECK (vote_a IN ('yes', 'no')),
-  vote_b     text CHECK (vote_b IN ('yes', 'no')),
-  decision   text CHECK (decision IN ('mvp', 'later', 'no')),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
-);
+-- Таблица бывшего раздела «Решаем MVP» (раздел убран).
+DROP TABLE IF EXISTS features;
 
 -- Порядок задач внутри списка («что за чем»): меньше — раньше. Нумерация в интерфейсе — по нему.
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;

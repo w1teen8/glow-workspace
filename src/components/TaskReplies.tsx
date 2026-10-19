@@ -7,26 +7,17 @@ import { LIMITS } from "@/lib/validate";
 import { RichText } from "./RichText";
 import { useWorkspace } from "./WorkspaceProvider";
 
-/**
- * Поле, растущее по тексту: Enter — сохранить, Shift+Enter — новая строка, Esc — отмена.
- * allowEmpty — можно сохранить пустой текст (например, стереть описание).
- */
-export function ReplyInput({
+/** Поле ответа: растёт по тексту, Enter — сохранить, Shift+Enter — новая строка, Esc — отмена. */
+function ReplyInput({
   initial = "",
   placeholder,
   label,
-  maxLength = LIMITS.replyText,
-  allowEmpty = false,
-  className = "reply-input",
   onSubmit,
   onClose,
 }: {
   initial?: string;
   placeholder?: string;
   label: string;
-  maxLength?: number;
-  allowEmpty?: boolean;
-  className?: string;
   onSubmit: (text: string) => void;
   onClose: () => void;
 }) {
@@ -42,17 +33,17 @@ export function ReplyInput({
 
   function submit() {
     const text = value.trim();
-    if ((text || allowEmpty) && text !== initial) onSubmit(text);
+    if (text && text !== initial) onSubmit(text);
     onClose();
   }
 
   return (
     <textarea
       ref={ref}
-      className={className}
+      className="reply-input"
       rows={1}
       value={value}
-      maxLength={maxLength}
+      maxLength={LIMITS.replyText}
       placeholder={placeholder}
       aria-label={label}
       autoFocus

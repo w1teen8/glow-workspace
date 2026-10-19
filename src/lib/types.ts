@@ -24,20 +24,6 @@ export type Reply = {
   createdAt: string;
 };
 
-export type Vote = "yes" | "no";
-/** Итог по кандидату в MVP; null — ещё обсуждаем. */
-export type Decision = "mvp" | "later" | "no";
-
-/** Кандидат в первую версию продукта (раздел «Решаем MVP»). */
-export type Feature = {
-  id: number;
-  title: string;
-  note: string;
-  votes: Record<Assignee, Vote | null>;
-  decision: Decision | null;
-  createdAt: string;
-};
-
 export type Item = {
   id: number;
   section: string;
@@ -53,7 +39,6 @@ export type WorkspaceState = {
   notes: Record<string, string>;
   tasks: Task[];
   replies: Reply[];
-  features: Feature[];
   items: Item[];
   people: People;
 };
