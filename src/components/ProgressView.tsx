@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { daysFromToday, formatDue } from "@/lib/dates";
-import type { Task } from "@/lib/types";
+import { BOTH_LABEL, type Task } from "@/lib/types";
 import { useWorkspace } from "./WorkspaceProvider";
 
 const DEADLINES_SHOWN = 7;
@@ -52,6 +52,7 @@ export function ProgressView() {
         <ul className="progress-list">
           <Row label={people.a} tasks={tasks.filter((t) => t.assignee === "a")} />
           <Row label={people.b} tasks={tasks.filter((t) => t.assignee === "b")} />
+          <Row label={BOTH_LABEL} tasks={tasks.filter((t) => t.assignee === "both")} />
           {unassigned.length > 0 && <Row label="Без исполнителя" tasks={unassigned} />}
         </ul>
       </section>
@@ -63,7 +64,8 @@ export function ProgressView() {
         ) : (
           <ul className="deadline-list">
             {deadlines.map((task) => {
-              const owner = task.assignee ? people[task.assignee] : null;
+              const owner =
+                task.assignee === "both" ? BOTH_LABEL : task.assignee ? people[task.assignee] : null;
               return (
                 <li key={task.id}>
                   <Link href="/tasks" className="deadline">

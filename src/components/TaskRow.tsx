@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { daysFromToday, formatDue } from "@/lib/dates";
-import type { Assignee, Task } from "@/lib/types";
+import { BOTH_LABEL, type Owner, type Task } from "@/lib/types";
 import { LIMITS } from "@/lib/validate";
 import { useWorkspace } from "./WorkspaceProvider";
 
@@ -77,11 +77,12 @@ export function TaskRow({ task }: { task: Task }) {
           value={task.assignee ?? ""}
           data-empty={!task.assignee}
           aria-label="Исполнитель"
-          onChange={(e) => updateTask(task.id, { assignee: (e.target.value || null) as Assignee | null })}
+          onChange={(e) => updateTask(task.id, { assignee: (e.target.value || null) as Owner | null })}
         >
           <option value="">кто?</option>
           <option value="a">{state.people.a}</option>
           <option value="b">{state.people.b}</option>
+          <option value="both">{BOTH_LABEL}</option>
         </select>
 
         <span className="due">

@@ -2,22 +2,22 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Assignee } from "@/lib/types";
+import type { Owner } from "@/lib/types";
 import { LIMITS } from "@/lib/validate";
 import { TaskRow } from "./TaskRow";
 import { useWorkspace } from "./WorkspaceProvider";
 
 /**
  * Без assignee — все задачи. С assignee (null — «без исполнителя») — только его задачи.
- * addable — поле добавления (новая задача получает этого исполнителя); без него — подсказка,
- * что задачи ставятся во вкладке «Задачи».
+ * addable — поле добавления (новая задача получает этого исполнителя); без него у личного
+ * списка — подсказка, что задачи ставятся во вкладке «Задачи», а прочие пустые списки скрыты.
  */
 export function TaskList({
   assignee,
   title = "Задачи",
   addable = assignee === undefined,
 }: {
-  assignee?: Assignee | null;
+  assignee?: Owner | null;
   title?: string;
   addable?: boolean;
 }) {
@@ -30,6 +30,9 @@ export function TaskList({
   const done = tasks
     .filter((t) => t.done)
     .sort((a, b) => (b.doneAt ?? "").localeCompare(a.doneAt ?? ""));
+
+  const personal = assignee === "a" || assignee === "b";
+  if (!addable && !personal && tasks.length === 0) return null;
 
   return (
     <section className="block">
@@ -61,14 +64,16 @@ export function TaskList({
           }}
         />
       ) : (
-        <p className="small muted tasks-hint">
-          {open.length === 0 && "Открытых задач нет. "}
-          Новые задачи ставятся во вкладке{" "}
-          <Link href="/tasks" className="link">
-            «Задачи»
-          </Link>
-          .
-        </p>
+        personal && (
+          <p className="small muted tasks-hint">
+            {open.length === 0 && "Открытых задач нет. "}
+            Новые задачи ставятся во вкладке{" "}
+            <Link href="/tasks" className="link">
+              «Задачи»
+            </Link>
+            .
+          </p>
+        )
       )}
 
       {done.length > 0 && (

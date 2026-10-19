@@ -1,11 +1,14 @@
 import type { Section } from "./sections";
 
 export type Assignee = "a" | "b";
+/** Исполнитель задачи: один из двоих или оба сразу. */
+export type Owner = Assignee | "both";
+export const BOTH_LABEL = "Вдвоём";
 
 export type Task = {
   id: number;
   text: string;
-  assignee: Assignee | null;
+  assignee: Owner | null;
   due: string | null; // YYYY-MM-DD
   done: boolean;
   doneAt: string | null;

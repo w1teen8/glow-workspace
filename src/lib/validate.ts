@@ -1,4 +1,4 @@
-import type { Assignee } from "./types";
+import type { Owner } from "./types";
 
 export const LIMITS = {
   taskText: 500,
@@ -17,9 +17,9 @@ export function cleanText(value: unknown, max: number): string | null {
   return text.length > 0 && text.length <= max ? text : null;
 }
 
-export function parseAssignee(value: unknown): Assignee | null | undefined {
+export function parseAssignee(value: unknown): Owner | null | undefined {
   if (value === null) return null;
-  if (value === "a" || value === "b") return value;
+  if (value === "a" || value === "b" || value === "both") return value;
   return undefined;
 }
 

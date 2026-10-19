@@ -35,7 +35,7 @@ ALTER TABLE sections ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 
 CREATE TABLE IF NOT EXISTS tasks (
   id         serial PRIMARY KEY,
   text       text NOT NULL,
-  assignee   text CHECK (assignee IN ('a', 'b')),
+  assignee   text CHECK (assignee IN ('a', 'b', 'both')),
   due        date,
   done       boolean NOT NULL DEFAULT false,
   done_at    timestamptz,
@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- Задачи общие, без привязки к разделу: живут только во вкладке «Задачи».
 ALTER TABLE tasks DROP COLUMN IF EXISTS section;
+
+-- «Вдвоём» — третий вариант исполнителя.
+ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_assignee_check;
+ALTER TABLE tasks ADD CONSTRAINT tasks_assignee_check CHECK (assignee IN ('a', 'b', 'both'));
 
 -- Блоки раздела: текст и/или файл. Файлы лежат прямо в базе (до 4 МБ каждый),
 -- чтобы не заводить отдельное хранилище и отдавать их только после входа.
