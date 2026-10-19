@@ -13,6 +13,16 @@ export async function PATCH(req: Request, ctx: Ctx) {
   const body = await readJson(req);
   if (!id || !body) return json({ error: "bad request" }, 400);
 
+  // { deleted: false } — вернуть удалённую задачу вместе с её ответами.
+  if (body.deleted === false) {
+    const rows = await db().query(
+      `UPDATE tasks SET deleted_at = NULL WHERE id = $1 RETURNING ${TASK_COLUMNS}`,
+      [id],
+    );
+    if (!rows.length) return json({ error: "not found" }, 404);
+    return json(toTask(rows[0]));
+  }
+
   // Каждое поле необязательно: меняется только то, что пришло в запросе.
   const has = (key: string) => Object.hasOwn(body, key);
   const text = has("text") ? cleanText(body.text, LIMITS.taskText) : null;
@@ -39,7 +49,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
                     WHEN $7::boolean THEN COALESCE(done_at, now())
                     ELSE NULL
                   END
-     WHERE id = $1
+     WHERE id = $1 AND deleted_at IS NULL
      RETURNING ${TASK_COLUMNS}`,
     [id, text, has("assignee"), assignee, has("due"), due, done],
   );
@@ -47,12 +57,17 @@ export async function PATCH(req: Request, ctx: Ctx) {
   return json(toTask(rows[0]));
 }
 
+// Удаление мягкое: сутки задачу можно вернуть кнопкой «Вернуть», потом она стирается вместе с ответами.
 export async function DELETE(req: Request, ctx: Ctx) {
   const denied = await authorize(req);
   if (denied) return denied;
 
   const id = parseId((await ctx.params).id);
   if (!id) return json({ error: "bad request" }, 400);
-  await db()`DELETE FROM tasks WHERE id = ${id}`;
+  const sql = db();
+  await sql.transaction([
+    sql`UPDATE tasks SET deleted_at = now() WHERE id = ${id} AND deleted_at IS NULL`,
+    sql`DELETE FROM tasks WHERE deleted_at < now() - interval '1 day'`,
+  ]);
   return json({ ok: true });
 }

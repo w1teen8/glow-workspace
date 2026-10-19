@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { isPersonSection, type Section } from "./sections";
-import type { Item, People, Task, WorkspaceState } from "./types";
+import type { Item, People, Reply, Task, WorkspaceState } from "./types";
 
 export function getPeople(): People {
   return {
@@ -22,6 +22,17 @@ export function toTask(row: Record<string, unknown>): Task {
     due: (row.due as string) ?? null,
     done: row.done as boolean,
     doneAt: row.doneAt ? new Date(row.doneAt as string).toISOString() : null,
+    createdAt: new Date(row.createdAt as string).toISOString(),
+  };
+}
+
+export const REPLY_COLUMNS = `id, task_id AS "taskId", text, created_at AS "createdAt"`;
+
+export function toReply(row: Record<string, unknown>): Reply {
+  return {
+    id: row.id as number,
+    taskId: row.taskId as number,
+    text: row.text as string,
     createdAt: new Date(row.createdAt as string).toISOString(),
   };
 }
@@ -49,9 +60,14 @@ export async function sectionExists(slug: unknown): Promise<boolean> {
 
 export async function loadState(): Promise<WorkspaceState> {
   const sql = db();
-  const [sectionRows, taskRows, itemRows] = await sql.transaction([
+  const [sectionRows, taskRows, replyRows, itemRows] = await sql.transaction([
     sql`SELECT slug, title, emoji, note FROM sections ORDER BY position, title`,
-    sql.query(`SELECT ${TASK_COLUMNS} FROM tasks ORDER BY created_at, id`),
+    sql.query(`SELECT ${TASK_COLUMNS} FROM tasks WHERE deleted_at IS NULL ORDER BY created_at, id`),
+    sql.query(
+      `SELECT ${REPLY_COLUMNS} FROM replies
+       WHERE task_id IN (SELECT id FROM tasks WHERE deleted_at IS NULL)
+       ORDER BY created_at, id`,
+    ),
     sql.query(`SELECT ${ITEM_COLUMNS} FROM items WHERE deleted_at IS NULL ORDER BY created_at, id`),
   ]);
 
@@ -65,6 +81,7 @@ export async function loadState(): Promise<WorkspaceState> {
     sections,
     notes,
     tasks: taskRows.map(toTask),
+    replies: replyRows.map(toReply),
     items: itemRows.map(toItem),
     people: getPeople(),
   };

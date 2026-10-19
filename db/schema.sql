@@ -49,6 +49,19 @@ ALTER TABLE tasks DROP COLUMN IF EXISTS section;
 ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_assignee_check;
 ALTER TABLE tasks ADD CONSTRAINT tasks_assignee_check CHECK (assignee IN ('a', 'b', 'both'));
 
+-- Удаление задачи мягкое: сутки её можно вернуть вместе с ответами, потом она стирается.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+
+-- Ответы под задачей: решение, ссылки, уточнения.
+CREATE TABLE IF NOT EXISTS replies (
+  id         serial PRIMARY KEY,
+  task_id    integer NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  text       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS replies_task_id_idx ON replies (task_id);
+
 -- Блоки раздела: текст и/или файл. Файлы лежат прямо в базе (до 4 МБ каждый),
 -- чтобы не заводить отдельное хранилище и отдавать их только после входа.
 CREATE TABLE IF NOT EXISTS items (

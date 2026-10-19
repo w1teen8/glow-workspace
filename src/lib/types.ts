@@ -15,6 +15,14 @@ export type Task = {
   createdAt: string;
 };
 
+/** Ответ под задачей. */
+export type Reply = {
+  id: number;
+  taskId: number;
+  text: string;
+  createdAt: string;
+};
+
 export type Item = {
   id: number;
   section: string;
@@ -29,6 +37,7 @@ export type WorkspaceState = {
   sections: Section[];
   notes: Record<string, string>;
   tasks: Task[];
+  replies: Reply[];
   items: Item[];
   people: People;
 };

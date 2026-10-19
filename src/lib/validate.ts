@@ -2,6 +2,7 @@ import type { Owner } from "./types";
 
 export const LIMITS = {
   taskText: 500,
+  replyText: 5000,
   note: 20000,
   itemText: 50000,
   // Файлы лежат в базе, а у бесплатного Neon 0,5 ГБ — поэтому не больше 4 МБ на файл.

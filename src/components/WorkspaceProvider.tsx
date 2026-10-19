@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Section } from "@/lib/sections";
-import type { Item, Owner, Task, WorkspaceState } from "@/lib/types";
+import type { Item, Owner, Reply, Task, WorkspaceState } from "@/lib/types";
 
 export const POLL_MS = 5000;
 
@@ -13,6 +13,9 @@ type Workspace = {
   addTask: (text: string, assignee?: Owner | null) => void;
   updateTask: (id: number, patch: TaskPatch) => void;
   deleteTask: (task: Task) => void;
+  addReply: (taskId: number, text: string) => void;
+  updateReply: (id: number, text: string) => void;
+  deleteReply: (reply: Reply) => void;
   saveNote: (section: string, note: string) => Promise<boolean>;
   addItem: (section: string, content: { text?: string; file?: File }) => Promise<boolean>;
   updateItem: (id: number, text: string) => Promise<boolean>;
@@ -145,6 +148,21 @@ export function WorkspaceProvider({
     [mutate],
   );
 
+  const createReply = useCallback(
+    (taskId: number, text: string) => {
+      const id = tempId.current--;
+      const draft: Reply = { id, taskId, text, createdAt: new Date().toISOString() };
+      void mutate(
+        (s) => ({ ...s, replies: [...s.replies, draft] }),
+        async () => {
+          const created: Reply = await (await send(`/api/tasks/${taskId}/replies`, "POST", { text })).json();
+          setState((s) => ({ ...s, replies: s.replies.map((r) => (r.id === id ? created : r)) }));
+        },
+      );
+    },
+    [mutate],
+  );
+
   const value: Workspace = {
     state,
 
@@ -176,12 +194,43 @@ export function WorkspaceProvider({
         () => send(`/api/tasks/${task.id}`, "DELETE"),
       ).then((ok) => {
         if (!ok) return;
-        const { text, assignee, due, done } = task;
         setToast({
           text: "Задача удалена",
           undo: () => {
             setToast(null);
-            createTask({ text, assignee, due, done });
+            void mutate(
+              (s) => ({ ...s, tasks: [...s.tasks, task].sort((a, b) => a.id - b.id) }),
+              () => send(`/api/tasks/${task.id}`, "PATCH", { deleted: false }),
+            );
+          },
+        });
+      });
+    },
+
+    addReply: (taskId, text) => {
+      if (taskId > 0) createReply(taskId, text);
+    },
+
+    updateReply: (id, text) => {
+      if (id < 0) return;
+      void mutate(
+        (s) => ({ ...s, replies: s.replies.map((r) => (r.id === id ? { ...r, text } : r)) }),
+        () => send(`/api/replies/${id}`, "PATCH", { text }),
+      );
+    },
+
+    deleteReply: (reply) => {
+      if (reply.id < 0) return;
+      void mutate(
+        (s) => ({ ...s, replies: s.replies.filter((r) => r.id !== reply.id) }),
+        () => send(`/api/replies/${reply.id}`, "DELETE"),
+      ).then((ok) => {
+        if (!ok) return;
+        setToast({
+          text: "Ответ удалён",
+          undo: () => {
+            setToast(null);
+            createReply(reply.taskId, reply.text);
           },
         });
       });

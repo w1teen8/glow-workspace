@@ -4,11 +4,13 @@ import { useRef, useState } from "react";
 import { daysFromToday, formatDue } from "@/lib/dates";
 import { BOTH_LABEL, type Owner, type Task } from "@/lib/types";
 import { LIMITS } from "@/lib/validate";
+import { TaskReplies } from "./TaskReplies";
 import { useWorkspace } from "./WorkspaceProvider";
 
 export function TaskRow({ task }: { task: Task }) {
   const { state, updateTask, deleteTask } = useWorkspace();
   const [editing, setEditing] = useState(false);
+  const [replying, setReplying] = useState(false);
   const dateInput = useRef<HTMLInputElement>(null);
   const pending = task.id < 0;
 
@@ -115,10 +117,24 @@ export function TaskRow({ task }: { task: Task }) {
           )}
         </span>
 
+        <button
+          className="reply-button"
+          aria-label="Ответить"
+          title="Ответить"
+          disabled={pending}
+          onClick={() => setReplying(true)}
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M3 3h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7.5L4.5 13.5V11H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+          </svg>
+        </button>
+
         <button className="delete" aria-label="Удалить задачу" title="Удалить" onClick={() => deleteTask(task)}>
           ×
         </button>
       </div>
+
+      <TaskReplies taskId={task.id} composing={replying} onComposeEnd={() => setReplying(false)} />
     </li>
   );
 }
