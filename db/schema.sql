@@ -78,3 +78,16 @@ CREATE TABLE IF NOT EXISTS items (
 );
 
 CREATE INDEX IF NOT EXISTS items_section ON items (section);
+
+-- «Решаем MVP»: кандидаты в первую версию, голоса обоих и итоговое решение.
+-- decision NULL — ещё обсуждаем. Удаление мягкое, как у задач.
+CREATE TABLE IF NOT EXISTS features (
+  id         serial PRIMARY KEY,
+  title      text NOT NULL,
+  note       text NOT NULL DEFAULT '',
+  vote_a     text CHECK (vote_a IN ('yes', 'no')),
+  vote_b     text CHECK (vote_b IN ('yes', 'no')),
+  decision   text CHECK (decision IN ('mvp', 'later', 'no')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz
+);

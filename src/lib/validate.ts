@@ -1,8 +1,10 @@
-import type { Owner } from "./types";
+import type { Decision, Owner, Vote } from "./types";
 
 export const LIMITS = {
   taskText: 500,
   replyText: 5000,
+  featureTitle: 200,
+  featureNote: 5000,
   note: 20000,
   itemText: 50000,
   // Файлы лежат в базе, а у бесплатного Neon 0,5 ГБ — поэтому не больше 4 МБ на файл.
@@ -22,6 +24,16 @@ export function parseAssignee(value: unknown): Owner | null | undefined {
   if (value === null) return null;
   if (value === "a" || value === "b" || value === "both") return value;
   return undefined;
+}
+
+export function parseVote(value: unknown): Vote | null | undefined {
+  if (value === null) return null;
+  return value === "yes" || value === "no" ? value : undefined;
+}
+
+export function parseDecision(value: unknown): Decision | null | undefined {
+  if (value === null) return null;
+  return value === "mvp" || value === "later" || value === "no" ? value : undefined;
 }
 
 export function parseDue(value: unknown): string | null | undefined {

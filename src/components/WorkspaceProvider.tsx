@@ -2,11 +2,19 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Section } from "@/lib/sections";
-import type { Item, Owner, Reply, Task, WorkspaceState } from "@/lib/types";
+import type { Decision, Feature, Item, Owner, Reply, Task, Vote, WorkspaceState } from "@/lib/types";
 
 export const POLL_MS = 5000;
 
 type TaskPatch = Partial<Pick<Task, "text" | "assignee" | "due" | "done">>;
+
+export type FeaturePatch = Partial<{
+  title: string;
+  note: string;
+  voteA: Vote | null;
+  voteB: Vote | null;
+  decision: Decision | null;
+}>;
 
 type Workspace = {
   state: WorkspaceState;
@@ -16,6 +24,9 @@ type Workspace = {
   addReply: (taskId: number, text: string) => void;
   updateReply: (id: number, text: string) => void;
   deleteReply: (reply: Reply) => void;
+  addFeature: (title: string) => void;
+  updateFeature: (id: number, patch: FeaturePatch) => void;
+  deleteFeature: (feature: Feature) => void;
   saveNote: (section: string, note: string) => Promise<boolean>;
   addItem: (section: string, content: { text?: string; file?: File }) => Promise<boolean>;
   updateItem: (id: number, text: string) => Promise<boolean>;
@@ -231,6 +242,69 @@ export function WorkspaceProvider({
           undo: () => {
             setToast(null);
             createReply(reply.taskId, reply.text);
+          },
+        });
+      });
+    },
+
+    addFeature: (title) => {
+      const id = tempId.current--;
+      const draft: Feature = {
+        id,
+        title,
+        note: "",
+        votes: { a: null, b: null },
+        decision: null,
+        createdAt: new Date().toISOString(),
+      };
+      void mutate(
+        (s) => ({ ...s, features: [...s.features, draft] }),
+        async () => {
+          const created: Feature = await (await send("/api/features", "POST", { title })).json();
+          setState((s) => ({ ...s, features: s.features.map((f) => (f.id === id ? created : f)) }));
+        },
+      );
+    },
+
+    updateFeature: (id, patch) => {
+      if (id < 0) return;
+      void mutate(
+        (s) => ({
+          ...s,
+          features: s.features.map((f) =>
+            f.id === id
+              ? {
+                  ...f,
+                  title: patch.title ?? f.title,
+                  note: patch.note ?? f.note,
+                  votes: {
+                    a: patch.voteA === undefined ? f.votes.a : patch.voteA,
+                    b: patch.voteB === undefined ? f.votes.b : patch.voteB,
+                  },
+                  decision: patch.decision === undefined ? f.decision : patch.decision,
+                }
+              : f,
+          ),
+        }),
+        () => send(`/api/features/${id}`, "PATCH", patch),
+      );
+    },
+
+    deleteFeature: (feature) => {
+      if (feature.id < 0) return;
+      void mutate(
+        (s) => ({ ...s, features: s.features.filter((f) => f.id !== feature.id) }),
+        () => send(`/api/features/${feature.id}`, "DELETE"),
+      ).then((ok) => {
+        if (!ok) return;
+        setToast({
+          text: "Кандидат удалён",
+          undo: () => {
+            setToast(null);
+            void mutate(
+              (s) => ({ ...s, features: [...s.features, feature].sort((a, b) => a.id - b.id) }),
+              () => send(`/api/features/${feature.id}`, "PATCH", { deleted: false }),
+            );
           },
         });
       });

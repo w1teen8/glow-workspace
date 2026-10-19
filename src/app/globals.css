@@ -1502,3 +1502,266 @@ h2 .count {
   font-size: var(--fs-small);
   color: var(--accent);
 }
+
+/* ---------- Решаем MVP ---------- */
+
+.lead {
+  max-width: 620px;
+  margin: -16px 0 28px;
+  line-height: 1.6;
+}
+
+.decide-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.decide-summary li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.decide-count {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.decide-summary li[data-decision="mvp"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.decide-summary li[data-decision="mvp"] .decide-count {
+  color: var(--accent);
+}
+
+.feature-add {
+  margin-bottom: 40px;
+  border-radius: var(--radius);
+}
+
+.feature-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature {
+  padding: 14px 12px 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color var(--ease);
+}
+
+.feature[data-decision="mvp"] {
+  border-color: var(--accent-line);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.feature[data-decision="later"],
+.feature[data-decision="no"] {
+  background: transparent;
+}
+
+.feature[data-decision="no"] .feature-title {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+.feature[data-pending="true"] {
+  opacity: 0.6;
+}
+
+.feature-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-title {
+  padding: 4px 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+
+.feature-title-edit {
+  width: 100%;
+  padding: 4px 0;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+}
+
+.verdict {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.verdict[data-tone="yes"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.feature-note {
+  margin-top: 2px;
+  padding-right: 40px;
+  color: var(--muted);
+  font-size: 15px;
+  cursor: text;
+}
+
+.feature-note .rich {
+  line-height: 1.55;
+}
+
+.feature-note-input {
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  padding: 0;
+  resize: none;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.feature-note-add {
+  margin-top: 2px;
+  padding: 2px 0;
+  color: var(--faint);
+  font-size: var(--fs-small);
+  transition: color var(--ease);
+}
+
+.feature-note-add:hover {
+  color: var(--accent);
+}
+
+.feature-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 12px;
+  padding-right: 6px;
+}
+
+.votes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.vote {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vote-name {
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.vote-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 15px;
+  filter: grayscale(1);
+  opacity: 0.45;
+  transition: opacity var(--ease), filter var(--ease), border-color var(--ease), background var(--ease);
+}
+
+.vote-btn:hover {
+  opacity: 0.8;
+}
+
+.vote-btn[aria-pressed="true"] {
+  filter: none;
+  opacity: 1;
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.decision {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.decision button {
+  padding: 6px 12px;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  transition: color var(--ease), background var(--ease);
+}
+
+.decision button:hover {
+  color: var(--text);
+}
+
+.decision button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (max-width: 760px) {
+  .lead {
+    margin-top: -8px;
+  }
+
+  .feature {
+    padding: 12px 8px 12px 14px;
+  }
+
+  .feature-note {
+    padding-right: 0;
+  }
+
+  .decision {
+    width: 100%;
+  }
+
+  .decision button {
+    flex: 1;
+    padding: 8px 6px;
+  }
+}

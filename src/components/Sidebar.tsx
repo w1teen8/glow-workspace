@@ -24,6 +24,7 @@ export function Sidebar() {
   ];
   const links = [
     ...fixed,
+    { href: "/decide", emoji: "🗳️", title: "Решаем MVP" },
     ...state.sections.map((s) => ({ href: `/s/${s.slug}`, emoji: s.emoji, title: s.title })),
   ];
   const current = links.find((l) => l.href === pathname);
