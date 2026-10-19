@@ -21,6 +21,7 @@ type Workspace = {
   addTask: (text: string, assignee?: Owner | null) => void;
   updateTask: (id: number, patch: TaskPatch) => void;
   deleteTask: (task: Task) => void;
+  reorderTasks: (ids: number[]) => void;
   addReply: (taskId: number, text: string) => void;
   updateReply: (id: number, text: string) => void;
   deleteReply: (reply: Reply) => void;
@@ -147,9 +148,13 @@ export function WorkspaceProvider({
     (fields: Pick<Task, "text" | "assignee" | "due" | "done">) => {
       const id = tempId.current--;
       const now = new Date().toISOString();
-      const draft: Task = { ...fields, id, doneAt: fields.done ? now : null, createdAt: now };
+      const draft: Task = { ...fields, id, position: 0, doneAt: fields.done ? now : null, createdAt: now };
       void mutate(
-        (s) => ({ ...s, tasks: [...s.tasks, draft] }),
+        (s) => {
+          // новая задача — в конец списка, как и на сервере
+          const position = Math.max(0, ...s.tasks.map((t) => t.position)) + 1;
+          return { ...s, tasks: [...s.tasks, { ...draft, position }] };
+        },
         async () => {
           const created: Task = await (await send("/api/tasks", "POST", fields)).json();
           setState((s) => ({ ...s, tasks: s.tasks.map((t) => (t.id === id ? created : t)) }));
@@ -216,6 +221,15 @@ export function WorkspaceProvider({
           },
         });
       });
+    },
+
+    reorderTasks: (ids) => {
+      if (ids.some((id) => id < 0)) return;
+      const order = new Map(ids.map((id, i) => [id, i + 1]));
+      void mutate(
+        (s) => ({ ...s, tasks: s.tasks.map((t) => (order.has(t.id) ? { ...t, position: order.get(t.id)! } : t)) }),
+        () => send("/api/tasks/order", "PUT", { ids }),
+      );
     },
 
     addReply: (taskId, text) => {

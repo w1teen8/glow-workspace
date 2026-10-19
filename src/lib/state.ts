@@ -10,7 +10,7 @@ export function getPeople(): People {
 }
 
 export const TASK_COLUMNS = `
-  id, text, assignee, to_char(due, 'YYYY-MM-DD') AS due, done,
+  id, text, assignee, to_char(due, 'YYYY-MM-DD') AS due, position, done,
   done_at AS "doneAt", created_at AS "createdAt"
 `;
 
@@ -20,6 +20,7 @@ export function toTask(row: Record<string, unknown>): Task {
     text: row.text as string,
     assignee: (row.assignee as Task["assignee"]) ?? null,
     due: (row.due as string) ?? null,
+    position: row.position as number,
     done: row.done as boolean,
     doneAt: row.doneAt ? new Date(row.doneAt as string).toISOString() : null,
     createdAt: new Date(row.createdAt as string).toISOString(),
@@ -75,7 +76,7 @@ export async function loadState(): Promise<WorkspaceState> {
   const sql = db();
   const [sectionRows, taskRows, replyRows, featureRows, itemRows] = await sql.transaction([
     sql`SELECT slug, title, emoji, note FROM sections ORDER BY position, title`,
-    sql.query(`SELECT ${TASK_COLUMNS} FROM tasks WHERE deleted_at IS NULL ORDER BY created_at, id`),
+    sql.query(`SELECT ${TASK_COLUMNS} FROM tasks WHERE deleted_at IS NULL ORDER BY position, created_at, id`),
     sql.query(
       `SELECT ${REPLY_COLUMNS} FROM replies
        WHERE task_id IN (SELECT id FROM tasks WHERE deleted_at IS NULL)

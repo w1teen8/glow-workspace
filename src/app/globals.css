@@ -785,7 +785,7 @@ h2 .count {
 
 .task {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 26px 28px minmax(0, 1fr) auto;
   gap: 2px 10px;
   align-items: center;
   min-height: 54px;
@@ -822,6 +822,49 @@ h2 .count {
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     center / 14px no-repeat;
   border-color: var(--accent);
+}
+
+/* Номер задачи: клик — ввести новый номер */
+.task-num-cell {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+}
+
+.task-num,
+.task-num-edit {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.task-num {
+  color: var(--faint);
+  transition: color var(--ease), background var(--ease);
+}
+
+.task-num:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.task-num-edit {
+  padding: 0;
+  border: 1px solid var(--accent-line);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.task-num-edit::-webkit-outer-spin-button,
+.task-num-edit::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
 }
 
 .check-hit {
@@ -981,7 +1024,7 @@ h2 .count {
 }
 
 .replies {
-  grid-column: 2 / -1;
+  grid-column: 3 / -1;
   display: grid;
   gap: 6px;
   margin: 0 0 10px;
@@ -1127,12 +1170,12 @@ h2 .count {
 
 @media (max-width: 760px) {
   .task {
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: 26px 28px minmax(0, 1fr);
     padding: 8px 0;
   }
 
   .task .task-meta {
-    grid-column: 2;
+    grid-column: 3;
     flex-wrap: wrap;
   }
 
@@ -1763,5 +1806,13 @@ h2 .count {
   .decision button {
     flex: 1;
     padding: 8px 6px;
+  }
+}
+
+@media (max-width: 760px) {
+  /* номер — на одной линии с галочкой, а не по центру многострочной задачи */
+  .task-num-cell {
+    align-self: start;
+    height: 44px;
   }
 }

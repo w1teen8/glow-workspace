@@ -91,3 +91,6 @@ CREATE TABLE IF NOT EXISTS features (
   created_at timestamptz NOT NULL DEFAULT now(),
   deleted_at timestamptz
 );
+
+-- Порядок задач внутри списка («что за чем»): меньше — раньше. Нумерация в интерфейсе — по нему.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;

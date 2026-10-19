@@ -21,12 +21,19 @@ export function TaskList({
   title?: string;
   addable?: boolean;
 }) {
-  const { state, addTask } = useWorkspace();
+  const { state, addTask, reorderTasks } = useWorkspace();
   const [draft, setDraft] = useState("");
   const [showDone, setShowDone] = useState(false);
 
   const tasks = assignee === undefined ? state.tasks : state.tasks.filter((t) => t.assignee === assignee);
-  const open = tasks.filter((t) => !t.done);
+  const open = tasks.filter((t) => !t.done).sort((a, b) => a.position - b.position || a.id - b.id);
+
+  /** Поставить задачу на место number (1 — первая) внутри этого списка. */
+  function move(id: number, number: number) {
+    const ids = open.map((t) => t.id).filter((x) => x !== id);
+    ids.splice(Math.min(Math.max(number, 1), ids.length + 1) - 1, 0, id);
+    reorderTasks(ids);
+  }
   const done = tasks
     .filter((t) => t.done)
     .sort((a, b) => (b.doneAt ?? "").localeCompare(a.doneAt ?? ""));
@@ -42,8 +49,14 @@ export function TaskList({
         </h2>
       )}
       <ul className="tasks">
-        {open.map((task) => (
-          <TaskRow key={task.id} task={task} />
+        {open.map((task, i) => (
+          <TaskRow
+            key={task.id}
+            task={task}
+            number={i + 1}
+            total={open.length}
+            onMove={(n) => move(task.id, n)}
+          />
         ))}
       </ul>
 

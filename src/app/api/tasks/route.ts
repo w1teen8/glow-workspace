@@ -17,8 +17,9 @@ export async function POST(req: Request) {
   }
 
   const [row] = await db().query(
-    `INSERT INTO tasks (text, assignee, due, done, done_at)
-     VALUES ($1, $2, $3::date, $4, CASE WHEN $4 THEN now() END)
+    `INSERT INTO tasks (text, assignee, due, done, done_at, position)
+     VALUES ($1, $2, $3::date, $4, CASE WHEN $4 THEN now() END,
+             (SELECT COALESCE(max(position), 0) + 1 FROM tasks))
      RETURNING ${TASK_COLUMNS}`,
     [text, assignee, due, done],
   );

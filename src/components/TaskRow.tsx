@@ -7,7 +7,61 @@ import { LIMITS } from "@/lib/validate";
 import { TaskReplies } from "./TaskReplies";
 import { useWorkspace } from "./WorkspaceProvider";
 
-export function TaskRow({ task }: { task: Task }) {
+/** Номер задачи в списке; клик — ввести новый номер, задача переедет на это место. */
+function TaskNumber({ number, total, onMove }: { number: number; total: number; onMove: (n: number) => void }) {
+  const [editing, setEditing] = useState(false);
+
+  function finish(input: HTMLInputElement, save: boolean) {
+    const n = Number.parseInt(input.value, 10);
+    if (save && Number.isFinite(n) && n !== number) onMove(n);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input
+        className="task-num-edit"
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={total}
+        defaultValue={number}
+        autoFocus
+        enterKeyHint="done"
+        aria-label={`Номер задачи, от 1 до ${total}`}
+        onFocus={(e) => e.currentTarget.select()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") finish(e.currentTarget, true);
+          if (e.key === "Escape") finish(e.currentTarget, false);
+        }}
+        onBlur={(e) => finish(e.currentTarget, true)}
+      />
+    );
+  }
+
+  return (
+    <button
+      className="task-num"
+      title="Изменить порядок"
+      aria-label={`Задача № ${number}. Изменить порядок`}
+      onClick={() => setEditing(true)}
+    >
+      {number}
+    </button>
+  );
+}
+
+export function TaskRow({
+  task,
+  number,
+  total = 0,
+  onMove,
+}: {
+  task: Task;
+  number?: number;
+  total?: number;
+  onMove?: (n: number) => void;
+}) {
   const { state, updateTask, deleteTask } = useWorkspace();
   const [editing, setEditing] = useState(false);
   const [replying, setReplying] = useState(false);
@@ -35,6 +89,9 @@ export function TaskRow({ task }: { task: Task }) {
 
   return (
     <li className="task" data-done={task.done} data-pending={pending}>
+      <span className="task-num-cell">
+        {number !== undefined && onMove && !pending && <TaskNumber number={number} total={total} onMove={onMove} />}
+      </span>
       <label className="check-hit">
         <input
           type="checkbox"

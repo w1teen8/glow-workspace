@@ -10,6 +10,7 @@ export type Task = {
   text: string;
   assignee: Owner | null;
   due: string | null; // YYYY-MM-DD
+  position: number; // порядок в списке: меньше — раньше
   done: boolean;
   doneAt: string | null;
   createdAt: string;
