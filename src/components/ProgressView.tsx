@@ -8,9 +8,11 @@ import { useWorkspace } from "./WorkspaceProvider";
 
 const DEADLINES_SHOWN = 7;
 
+/** Строка человека: сколько сделано и следующая задача — первая открытая по номеру. */
 function Row({ label, tasks }: { label: string; tasks: Task[] }) {
   const done = tasks.filter((t) => t.done).length;
   const share = tasks.length ? done / tasks.length : 0;
+  const next = tasks.filter((t) => !t.done).sort((a, b) => a.position - b.position || a.id - b.id)[0];
   return (
     <li>
       <Link href="/tasks" className="progress-row">
@@ -19,6 +21,11 @@ function Row({ label, tasks }: { label: string; tasks: Task[] }) {
         <span className="bar" aria-hidden>
           <span className="bar-fill" style={{ width: `${share * 100}%`, display: "block" }} />
         </span>
+        {next && (
+          <span className="progress-next">
+            Дальше: <span>{next.text}</span>
+          </span>
+        )}
       </Link>
     </li>
   );
