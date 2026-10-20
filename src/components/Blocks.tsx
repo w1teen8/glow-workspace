@@ -5,7 +5,7 @@ import { formatDue, localDay } from "@/lib/dates";
 import { formatSize, shrinkImage } from "@/lib/images";
 import type { Item } from "@/lib/types";
 import { INLINE_MIME, LIMITS } from "@/lib/validate";
-import { FormatBar, RichText, handleFormatKey, renderRich } from "./RichText";
+import { FormatBar, RichText, countChecks, handleFormatKey, renderRich, toggleCheck } from "./RichText";
 import { useWorkspace } from "./WorkspaceProvider";
 
 /** Высота textarea по содержимому. */
@@ -152,8 +152,16 @@ function BlockView({ item }: { item: Item }) {
   const hasTitle =
     lines.length > 1 && lines[0].trim().length > 0 && lines[0].length <= 120 && !/^\s*[•\-–*]\s/.test(lines[0]);
   const title = hasTitle ? lines[0] : null;
-  const body = hasTitle ? lines.slice(1).join("\n").replace(/^\n+/, "") : text;
+  // Номер строки, с которой начинается тело, — чтобы галочка меняла нужную строку всего текста.
+  let bodyStart = hasTitle ? 1 : 0;
+  while (hasTitle && bodyStart < lines.length && !lines[bodyStart].trim()) bodyStart++;
+  const body = lines.slice(bodyStart).join("\n");
   const isLong = renderRich(body).length > COLLAPSED_ELEMENTS + 1;
+  const checks = countChecks(text);
+
+  function toggle(line: number) {
+    void updateItem(item.id, toggleCheck(text, bodyStart + line));
+  }
 
   function startEdit() {
     setDraft(text);
@@ -198,16 +206,29 @@ function BlockView({ item }: { item: Item }) {
               tabIndex={0}
               title="Изменить"
               onClick={(e) => {
-                if (!(e.target as HTMLElement).closest("a, .blk-more")) startEdit();
+                if (!(e.target as HTMLElement).closest("a, .blk-more, .check-item")) startEdit();
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && e.target === e.currentTarget) startEdit();
               }}
             >
-              {title && <h3 className="blk-title">{title.replace(/^#{1,2}\s+/, "")}</h3>}
+              {title && (
+                <h3 className="blk-title">
+                  {title.replace(/^#{1,2}\s+/, "")}
+                  {checks.total > 0 && (
+                    <span className="check-count" data-complete={checks.done === checks.total}>
+                      {checks.done} из {checks.total}
+                    </span>
+                  )}
+                </h3>
+              )}
               {body && (
                 <div className="blk-content">
-                  <RichText text={body} limit={isLong && !expanded ? COLLAPSED_ELEMENTS : undefined} />
+                  <RichText
+                    text={body}
+                    limit={isLong && !expanded ? COLLAPSED_ELEMENTS : undefined}
+                    onToggle={toggle}
+                  />
                 </div>
               )}
               {isLong && (

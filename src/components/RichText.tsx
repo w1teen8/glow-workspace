@@ -6,6 +6,7 @@ import type { ReactNode, RefObject } from "react";
  * Лёгкая разметка блоков — то, что ставят кнопки панели форматирования:
  *   # Заголовок      ## Подзаголовок
  *   • пункт / - пункт       1. пункт
+ *   [ ] шаг / [x] сделанный шаг (чек-лист, галочку можно ставить прямо в просмотре)
  *   **жирный**  *курсив*  и ссылки http(s)://…
  * Рендерится в React-элементы, без HTML из текста.
  */
@@ -34,12 +35,41 @@ function inline(text: string, key: string): ReactNode[] {
   return out;
 }
 
+/** Пункт чек-листа: «[ ] текст», «[x] текст» (x латинская или кириллическая), можно с «- » впереди. */
+export const CHECK = /^\s*(?:[•\-–*]\s+)?\[([ xXхХ])\]\s+/;
 const BULLET = /^\s*[•\-–*]\s+/;
+
+/** Сколько пунктов чек-листа в тексте и сколько из них отмечено. */
+export function countChecks(text: string) {
+  let total = 0;
+  let done = 0;
+  for (const line of text.split("\n")) {
+    const m = line.match(CHECK);
+    if (!m) continue;
+    total++;
+    if (m[1] !== " ") done++;
+  }
+  return { total, done };
+}
+
+/** Переключает галочку в строке lineIndex. */
+export function toggleCheck(text: string, lineIndex: number) {
+  const lines = text.split("\n");
+  const line = lines[lineIndex] ?? "";
+  const m = line.match(CHECK);
+  if (!m) return text;
+  const at = line.indexOf("[", line.length - line.trimStart().length);
+  lines[lineIndex] = line.slice(0, at + 1) + (m[1] === " " ? "x" : " ") + line.slice(at + 2);
+  return lines.join("\n");
+}
 const NUMBER = /^\s*(\d+)[.)]\s*/;
 const HEADING = /^(#{1,2})\s+/;
 
-/** Текст → список верхнеуровневых элементов (абзацы, заголовки, списки). */
-export function renderRich(text: string): ReactNode[] {
+/**
+ * Текст → список верхнеуровневых элементов (абзацы, заголовки, списки).
+ * onToggle(номер строки) — галочки чек-листа кликабельны; без него они только показываются.
+ */
+export function renderRich(text: string, onToggle?: (line: number) => void): ReactNode[] {
   const lines = text.split("\n");
   const out: ReactNode[] = [];
   let i = 0;
@@ -58,6 +88,36 @@ export function renderRich(text: string): ReactNode[] {
       const content = inline(line.slice(heading[0].length), key);
       out.push(heading[1].length === 1 ? <h3 key={key}>{content}</h3> : <h4 key={key}>{content}</h4>);
       i++;
+      continue;
+    }
+
+    if (CHECK.test(line)) {
+      const items: ReactNode[] = [];
+      while (i < lines.length && CHECK.test(lines[i])) {
+        const m = lines[i].match(CHECK)!;
+        const done = m[1] !== " ";
+        const at = i;
+        items.push(
+          <li key={i} className="check-item" data-done={done}>
+            <label>
+              <input
+                type="checkbox"
+                className="check"
+                checked={done}
+                disabled={!onToggle}
+                onChange={() => onToggle?.(at)}
+              />
+              <span>{inline(lines[i].slice(m[0].length), `${key}-${i}`)}</span>
+            </label>
+          </li>,
+        );
+        i++;
+      }
+      out.push(
+        <ul key={key} className="checklist">
+          {items}
+        </ul>,
+      );
       continue;
     }
 
@@ -93,6 +153,7 @@ export function renderRich(text: string): ReactNode[] {
       i < lines.length &&
       lines[i].trim() &&
       !HEADING.test(lines[i]) &&
+      !CHECK.test(lines[i]) &&
       !BULLET.test(lines[i]) &&
       !(NUMBER.test(lines[i]) && lines[i].replace(NUMBER, "").trim())
     ) {
@@ -110,8 +171,16 @@ export function renderRich(text: string): ReactNode[] {
 }
 
 /** limit — показать только первые N элементов (свёрнутый длинный блок). */
-export function RichText({ text, limit }: { text: string; limit?: number }) {
-  const nodes = renderRich(text);
+export function RichText({
+  text,
+  limit,
+  onToggle,
+}: {
+  text: string;
+  limit?: number;
+  onToggle?: (line: number) => void;
+}) {
+  const nodes = renderRich(text, onToggle);
   return <div className="rich">{limit ? nodes.slice(0, limit) : nodes}</div>;
 }
 
@@ -156,7 +225,7 @@ function prefixLines(make: (n: number) => string, strip: RegExp) {
   };
 }
 
-const ANY_PREFIX = /^(#{1,2}\s+|\s*[•\-–*]\s+|\s*\d+[.)]\s*)/;
+const ANY_PREFIX = /^(#{1,2}\s+|\s*(?:[•\-–*]\s+)?\[[ xXхХ]\]\s+|\s*[•\-–*]\s+|\s*\d+[.)]\s*)/;
 
 export const FORMATS = {
   h1: prefixLines(() => "# ", ANY_PREFIX),
@@ -165,6 +234,7 @@ export const FORMATS = {
   italic: wrap("*"),
   bullets: prefixLines(() => "• ", ANY_PREFIX),
   numbers: prefixLines((n) => `${n}. `, ANY_PREFIX),
+  checks: prefixLines(() => "[ ] ", ANY_PREFIX),
 };
 
 /** Ctrl/Cmd+B и Ctrl/Cmd+I в поле ввода. Возвращает true, если клавиша обработана. */
@@ -211,6 +281,7 @@ export function FormatBar({
       {button(<em>К</em>, "Курсив (Ctrl+I)", "italic")}
       {button("• Список", "Маркированный список", "bullets")}
       {button("1. Список", "Нумерованный список", "numbers")}
+      {button("☐ Чек-лист", "Чек-лист: пункты с галочками", "checks")}
     </div>
   );
 }
