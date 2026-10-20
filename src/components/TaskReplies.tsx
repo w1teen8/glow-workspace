@@ -101,7 +101,19 @@ function ReplyView({ reply }: { reply: Reply }) {
   );
 }
 
-/** Ответы под задачей и поле нового ответа (открывается кнопкой «Ответить» в строке задачи). */
+/** «1 ответ», «3 ответа», «5 ответов». */
+function repliesLabel(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  const word =
+    mod10 === 1 && mod100 !== 11 ? "ответ" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "ответа" : "ответов";
+  return `${n} ${word}`;
+}
+
+/**
+ * Ответы под задачей: свёрнуты под кнопкой «N ответов», раскрываются по клику.
+ * Поле нового ответа открывается кнопкой «Ответить» в строке задачи — тогда ответы видны сразу.
+ */
 export function TaskReplies({
   taskId,
   composing,
@@ -112,24 +124,44 @@ export function TaskReplies({
   onComposeEnd: () => void;
 }) {
   const { state, addReply } = useWorkspace();
+  const [open, setOpen] = useState(false);
   const replies = state.replies.filter((r) => r.taskId === taskId);
   if (replies.length === 0 && !composing) return null;
+  const shown = open || composing;
 
   return (
-    <ul className="replies">
-      {replies.map((reply) => (
-        <ReplyView key={reply.id} reply={reply} />
-      ))}
-      {composing && (
-        <li className="reply">
-          <ReplyInput
-            placeholder="Ответ, решение или ссылка… Enter — отправить"
-            label="Новый ответ"
-            onSubmit={(text) => addReply(taskId, text)}
-            onClose={onComposeEnd}
-          />
-        </li>
+    <div className="replies-wrap">
+      {replies.length > 0 && !composing && (
+        <button className="replies-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M3 3h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7.5L4.5 13.5V11H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+          </svg>
+          {open ? "Скрыть" : repliesLabel(replies.length)}
+          <span className="replies-chevron" aria-hidden>
+            ▾
+          </span>
+        </button>
       )}
-    </ul>
+      {shown && (
+        <ul className="replies">
+          {replies.map((reply) => (
+            <ReplyView key={reply.id} reply={reply} />
+          ))}
+          {composing && (
+            <li className="reply">
+              <ReplyInput
+                placeholder="Ответ, решение или ссылка… Enter — отправить"
+                label="Новый ответ"
+                onSubmit={(text) => {
+                  addReply(taskId, text);
+                  setOpen(true);
+                }}
+                onClose={onComposeEnd}
+              />
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
   );
 }
