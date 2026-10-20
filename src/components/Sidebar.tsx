@@ -17,10 +17,10 @@ export function Sidebar() {
   const [draft, setDraft] = useState("");
 
   const fixed = [
-    { href: "/", emoji: "", title: "Прогресс" },
-    { href: "/tasks", emoji: "", title: "Задачи" },
-    { href: "/p/a", emoji: "", title: state.people.a },
-    { href: "/p/b", emoji: "", title: state.people.b },
+    { href: "/", emoji: "📊", title: "Прогресс" },
+    { href: "/tasks", emoji: "✅", title: "Задачи" },
+    { href: "/p/a", emoji: "🐱", title: state.people.a },
+    { href: "/p/b", emoji: "🌸", title: state.people.b },
   ];
   const links = [
     ...fixed,
