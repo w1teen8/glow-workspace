@@ -7,6 +7,9 @@ import { LIMITS } from "@/lib/validate";
 import { TaskRow } from "./TaskRow";
 import { useWorkspace } from "./WorkspaceProvider";
 
+/** Сколько открытых задач видно сразу; остальные — по кнопке «Дальше». */
+const VISIBLE_TASKS = 15;
+
 /**
  * Без assignee — все задачи. С assignee (null — «без исполнителя») — только его задачи.
  * addable — поле добавления (новая задача получает этого исполнителя); без него у личного
@@ -24,6 +27,7 @@ export function TaskList({
   const { state, addTask, reorderTasks } = useWorkspace();
   const [draft, setDraft] = useState("");
   const [showDone, setShowDone] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const tasks = assignee === undefined ? state.tasks : state.tasks.filter((t) => t.assignee === assignee);
   const open = tasks.filter((t) => !t.done).sort((a, b) => a.position - b.position || a.id - b.id);
@@ -49,7 +53,7 @@ export function TaskList({
         </h2>
       )}
       <ul className="tasks">
-        {open.map((task, i) => (
+        {(showAll ? open : open.slice(0, VISIBLE_TASKS)).map((task, i) => (
           <TaskRow
             key={task.id}
             task={task}
@@ -58,6 +62,13 @@ export function TaskList({
             onMove={(n) => move(task.id, n)}
           />
         ))}
+        {open.length > VISIBLE_TASKS && (
+          <li className="task-more">
+            <button aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>
+              {showAll ? "Свернуть" : `Дальше · ещё ${open.length - VISIBLE_TASKS}`}
+            </button>
+          </li>
+        )}
       </ul>
 
       {addable ? (
