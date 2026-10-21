@@ -1698,3 +1698,35 @@ h2 .count {
 .task-more {
   border-bottom: 1px solid var(--line);
 }
+
+/* Поиск по задачам */
+.task-search {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: 46px;
+  margin: 0 0 28px;
+  padding: 0 16px 0 44px;
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.5' fill='none' stroke='%238a93a0' stroke-width='1.6'/%3E%3Cpath d='M10.5 10.5L14 14' stroke='%238a93a0' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+    16px center / 16px no-repeat;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color var(--ease);
+}
+
+.task-search:focus {
+  border-color: var(--accent-line);
+}
+
+.task-search::placeholder {
+  color: var(--faint);
+}
+
+.tasks-empty {
+  margin: 0 0 12px;
+  padding-left: 4px;
+}
